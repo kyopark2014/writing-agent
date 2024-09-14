@@ -1,5 +1,7 @@
 # 글쓰기 챗봇 만들기
 
+여기에서는 LLM을 이용하여 MS Word 기준으로 약 10페이지 정도의 글쓰기를 가능하게 하는 Agent를 구현하는 방법에 대해 설명합니다.
+
 ## Long Term Writing
 
 전체적인 activity diagram은 아래와 같습니다. 여기에서는 plan and excute 패턴을 가지는 agent와 reflection을 수행하는 agent를 이용하여 instruction으로 장문의 글쓰기를 수행합니다. Multi agent 구조로 구성함으로써 복잡한 workflow를 단순하게 구현할 수 있습니다.
@@ -23,11 +25,11 @@ LLM의 output token과 관련하여 [Anthropic의 Claude3의 경우](https://doc
 ```
 
 아래는 구현된 Plan 노드를 보여줍니다. 상세한 코드는 [lambda_function.py](./lambda-chat-ws/lambda_function.py)을 참조합니다. 여기서는 LLM의 Role을 정의하고 글씨의 목표를 제시합니다. 사용자가 채팅창에 입력한 글쓰기의 주제는 instruction으로 LLM에 요청됩니다. 
+
 ```python
 def plan_node(state: State):
     print("###### plan ######")
     instruction = state["instruction"]
-    print('subject: ', instruction)
         
     if isKorean(instruction):
         planner_template = (
@@ -81,11 +83,9 @@ def plan_node(state: State):
     planner = planner_prompt | chat
     
     response = planner.invoke({"instruction": instruction})
-    print('response: ', response.content)
     
     plan = response.content.strip().replace('\n\n', '\n')
     planning_steps = plan.split('\n')        
-    print('planning_steps: ', planning_steps)
             
     return {
         "instruction": instruction,
@@ -102,15 +102,15 @@ def plan_node(state: State):
 4. Main Point: Advanced RAG의 장단점과 한계점, 그리고 향후 발전 방향에 대해 논의합니다. RAG 기술의 윤리적, 사회적 영향과 도전 과제에 대해서도 다룹니다. Word Count: 1200 words
 ```
 
-Plan 노드에서 생성된 글쓰기 작성 계획을 이용하여 Execute 노드에서는 아래와 같이 각 단락을 작성합니다. 단락 작성시 처음 요청된 글쓰기 지시사항, 전체 글쓰기 단계와 이전 단계에서 작성한 텍스트를 제공한 후에 현재 Step을 주고 이어서 작성하도록 요청합니다. LLM에게 글쓰기 지시사항, 전체 글쓰기 단계, 작성된 텍스트를 제공함으로써 이전에 작성된 글의 문맥을 잊어버리지 않고 원하는 문단을 작성하도록 할 수 있습니다. 이러한 방식은 매 단락 작성시 이전 문장 전체를 입력 context에 제공해야 함으로써 사용되는 token수의 증가와 전체 문장의 내용이 입력 context로 제한됩니다. Anthropic의 Claude3의 경우에 200k token을 제공하므로써 MS Word 기준으로 10페이지 내외의 문서는 작성 가능하지만 이보다 큰 용도로 사용하기 위해서는 이전 글씨나 단계의 내용을 조정하거나 요약하는 방법을 이용합니다. 
+Plan 노드에서 생성된 글쓰기 작성 계획을 이용하여 Execute 노드에서는 아래와 같이 각 단락을 작성합니다. 단락 작성시 처음 요청된 글쓰기 지시사항, 전체 글쓰기 단계와 이전 단계에서 작성한 텍스트를 제공한 후에 현재 Step을 주고 이어서 작성하도록 요청합니다. LLM에게 글쓰기 지시사항, 전체 글쓰기 단계, 작성된 텍스트를 제공함으로써 이전에 작성된 글의 문맥을 잊어버리지 않고 원하는 문단을 작성하도록 할 수 있습니다. 이러한 방식은 매 단락 작성시 이전 문장 전체를 입력 context에 제공해야 함으로써 사용되는 token 수의 증가와 전체 문장의 내용이 입력 context로 제한됩니다. Anthropic의 Claude3의 경우에 200k token을 제공하므로써 MS Word 기준으로 10 페이지 내외의 문서는 작성 가능하지만 이보다 큰 용도로 사용하기 위해서는 이전 글씨나 단계의 내용을 조정하거나 요약하는 방법을 이용합니다. 
+
+작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도로고 markdown 형태를 이용합니다. 
 
 ```python
 def execute_node(state: State):
     print("###### write (execute) ######")        
     instruction = state["instruction"]
     planning_steps = state["planning_steps"]
-    print('instruction: ', instruction)
-    print('planning_steps: ', planning_steps)
         
     if isKorean(instruction):
         write_template = (
@@ -183,14 +183,7 @@ def execute_node(state: State):
     ])
         
     text = ""
-    drafts = []
-    if len(planning_steps) > 50:
-        print("plan is too long")
-        # print(plan)
-        return
-        
     for idx, step in enumerate(planning_steps):
-        # Invoke the write_chain
         chat = get_chat()
         write_chain = write_prompt | chat
             
@@ -201,13 +194,8 @@ def execute_node(state: State):
             "STEP": step
         })            
         output = result.content
-        # print('output: ', output)
             
         draft = output[output.find('<result>')+8:len(output)-9]
-        # print('draft: ', draft) 
-                       
-        if draft.find('#')!=-1 and draft.find('#')!=0:
-            draft = draft[draft.find('#'):]
             
         print(f"--> step:{step}")
         print(f"--> {draft}")
@@ -221,6 +209,100 @@ def execute_node(state: State):
     }
 ```
 
+Execute 노드에서 작성된 각 단락은 초안(draft)이므로 여기에서는 reflection 패턴을 통해 작성된 문단을 향상시킵니다. 작성된 글은 html로 변환하여 Amazon S3에 저장후, 직접 markdown형태로 공유하거나, 별도로 다운로드하여 블로그나 github을 통해 공유 될 수 있습니다. 
+
+```python
+def revise_answer(state: State):
+    print("###### revise ######")
+    drafts = state["drafts"]        
+        
+    # reflection
+    if multi_region == 'enable':  # parallel processing
+        final_doc = reflect_drafts_using_parallel_processing(drafts)
+    else:
+        reflection_app = buildReflection()
+                
+        final_doc = ""   
+        for idx, draft in enumerate(drafts):
+            inputs = {
+                "draft": draft
+            }    
+            config = {
+                "recursion_limit": 50,
+                "max_revisions": 1
+            }
+            output = reflection_app.invoke(inputs, config)
+                
+            final_doc += output['revised_draft'] + '\n\n'
+
+    subject = get_subject(state['instruction'])
+    # markdown file
+    markdown_key = 'markdown/'+f"{subject}.md"
+    # print('markdown_key: ', markdown_key)
+        
+    markdown_body = f"## {state['instruction']}\n\n"+final_doc
+                
+    s3_client = boto3.client('s3')  
+    response = s3_client.put_object(
+        Bucket=s3_bucket,
+        Key=markdown_key,
+        ContentType='text/markdown',
+        Body=markdown_body.encode('utf-8')
+    )
+    # print('response: ', response)
+        
+    markdown_url = f"{path}{markdown_key}"
+    print('markdown_url: ', markdown_url)
+        
+    # html file
+    html_key = 'markdown/'+f"{subject}.html"
+        
+    html_body = markdown_to_html(markdown_body)
+    print('html_body: ', html_body)
+        
+    s3_client = boto3.client('s3')  
+    response = s3_client.put_object(
+        Bucket=s3_bucket,
+        Key=html_key,
+        ContentType='text/html',
+        Body=html_body
+    )
+        
+    html_url = f"{path}{html_key}"
+    print('html_url: ', html_url)
+        
+    return {
+        "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
+    }
+```
+
+작성된 markdown 문서를 html로 제공하기 위해서 아래와 같이 <md-block> 태그를 이용합니다. 또한 글쓰기 패턴은 github 형태를 이용하였습니다. 
+
+```python
+def markdown_to_html(body):
+    html = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <md-block>
+    </md-block>
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.css" integrity="sha512-n5zPz6LZB0QV1eraRj4OOxRbsV7a12eAGfFcrJ4bBFxxAwwYDp542z5M0w24tKPEhKk2QzjjIpR5hpOjJtGGoA==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+</head>
+<body>
+    <div class="markdown-body">
+        <md-block>{body}
+        </md-block>
+    </div>
+</body>
+</html>"""        
+
+    return html
+```
 
 ## Revise를 통해 글쓰기 개선
 
