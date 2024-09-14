@@ -794,7 +794,7 @@ class GradeDocuments(BaseModel):
 # Long term Writing Agent
 #########################################################
 
-def get_planner():
+def get_planner(query):
     if isKorean(query):
         planner_template = (
             "당신은 장문 작성에 능숙한 유능한 글쓰기 도우미입니다."
@@ -1085,7 +1085,7 @@ def plan_node(state: State):
     instruction = state["instruction"]
     print('subject: ', instruction)
         
-    planner = get_planner()
+    planner = get_planner(instruction)
     
     response = planner.invoke({"instruction": instruction})
     print('response: ', response.content)
