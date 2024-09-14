@@ -104,7 +104,16 @@ def plan_node(state: State):
 
 Plan 노드에서 생성된 글쓰기 작성 계획을 이용하여 Execute 노드에서는 아래와 같이 각 단락을 작성합니다. 단락 작성시 처음 요청된 글쓰기 지시사항, 전체 글쓰기 단계와 이전 단계에서 작성한 텍스트를 제공한 후에 현재 Step을 주고 이어서 작성하도록 요청합니다. LLM에게 글쓰기 지시사항, 전체 글쓰기 단계, 작성된 텍스트를 제공함으로써 이전에 작성된 글의 문맥을 잊어버리지 않고 원하는 문단을 작성하도록 할 수 있습니다. 이러한 방식은 매 단락 작성시 이전 문장 전체를 입력 context에 제공해야 함으로써 사용되는 token 수의 증가와 전체 문장의 내용이 입력 context로 제한됩니다. Anthropic의 Claude3의 경우에 200k token을 제공하므로써 MS Word 기준으로 10 페이지 내외의 문서는 작성 가능하지만 이보다 큰 용도로 사용하기 위해서는 이전 글씨나 단계의 내용을 조정하거나 요약하는 방법을 이용합니다. 
 
-작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도로고 markdown 형태를 이용합니다. 
+작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도로고 markdown 형태를 이용하였습니다. 아래 작성된 초안(draft)과 같이 markdown 형태는 문단이 "###"으로 구분됩니다. 
+
+```text
+### Advanced RAG의 응용 분야와 사례
+Advanced RAG는 다양한 분야에서 활용될 수 있으며, 특히 질의 응답, 요약, 데이터 증강 등의 분야에서 큰 잠재력을 보이고 있습니다.
+**질의 응답(Question Answering)**은 Advanced RAG의 가장 대표적인 응용 분야입니다. RAG 모델은 주어진 질문에 대해 외부 데이터베이스에서 관련 정보를 검색하고, 이를 바탕으로 정확한 답변을 생성할 수 있습니다. 예를 들어, 의학 분야에서 RAG 모델은 환자의 증상과 관련된 의학 문헌을 검색하여 진단과 치료 방법을 제안할 수 있습니다. 또한 법률 분야에서는 관련 법규와 판례를 검색하여 법적 자문을 제공할 수 있습니다.
+**요약(Summarization)** 분야에서도 RAG 모델이 활용될 수 있습니다. 긴 문서나 여러 문서에서 핵심 내용을 추출하고 간결하게 요약하는 작업에서 RAG 모델은 외부 지식원을 활용하여 더 정확하고 포괄적인 요약을 생성할 수 있습니다. 예를 들어, 뉴스 기사를 요약할 때 RAG 모델은 관련 배경 지식을 검색하여 중요한 맥락 정보를 포함시킬 수 있습니다.
+**데이터 증강(Data Augmentation)** 분야에서도 RAG 모델이 유용하게 활용될 수 있습니다. 기계 학습 모델을 학습시키기 위해서는 대량의 데이터가 필요한데, RAG 모델을 사용하면 기존 데이터에 외부 지식을 추가하여 데이터를 증강시킬 수 있습니다. 예를 들어, 자연어 처리 모델을 학습시킬 때 RAG 모델을 사용하여 기존 데이터에 관련 백과사전 정보를 추가하면 모델의 성능을 향상시킬 수 있습니다.
+이 외에도 Advanced RAG는 정보 추출, 지식 그래프 구축, 대화 시스템 등 다양한 분야에서 활용될 수 있습니다. RAG 모델은 외부 지식원을 효과적으로 활용하여 기존 언어 모델의 한계를 극복하고 더 나은 성능을 제공할 수 있습니다.
+```
 
 ```python
 def execute_node(state: State):
@@ -274,6 +283,43 @@ def revise_answer(state: State):
     return {
         "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
     }
+```
+
+Reflection 과정은 문장의 개선점을 찾고 부족한 부분은 검색하고 이를 적용하는 작업을 반복함으로써 전체 문단들을 순차적으로 진행하기 보다는 reflect_drafts_using_parallel_processing()와 같이 병렬처리하는것이 합리적입니다. 각 문단은 reflect_draft()을 통해 수정 작업을 수행합니다. 문단을 병렬 처리할 경우에 각 문단의 개선 작업 시간은 각 문단의 길이와 검색하는 컨텐츠의 양에 따라 달라집니다. 따라서, 아래와 같이 문단에 대한 개선작업 요청에 문서의 인덱스를 포함하고, 결과를 json 형태로 받아서 각 index에 따라 수정된 문단(revised_draft)을 배치합니다. 
+
+```python
+def reflect_drafts_using_parallel_processing(drafts):
+    revised_drafts = drafts
+        
+    processes = []
+    parent_connections = []
+        
+    reflection_app = buildReflection()
+                
+    for idx, draft in enumerate(drafts):
+        parent_conn, child_conn = Pipe()
+        parent_connections.append(parent_conn)
+            
+        process = Process(target=reflect_draft, args=(child_conn, reflection_app, idx, draft))
+        processes.append(process)
+            
+    for process in processes:
+        process.start()
+                
+    for parent_conn in parent_connections:
+        result = parent_conn.recv()
+
+        if result is not None:
+            revised_drafts[result['idx']] = result['revised_draft']
+
+    for process in processes:
+        process.join()
+                
+    final_doc = ""   
+    for revised_draft in revised_drafts:
+        final_doc += revised_draft + '\n\n'
+        
+    return final_doc
 ```
 
 작성된 markdown 문서를 html로 제공하기 위해서 아래와 같이 <md-block> 태그를 이용합니다. 또한 글쓰기 패턴은 github 형태를 이용하였습니다. 
