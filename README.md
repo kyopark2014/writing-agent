@@ -6,9 +6,18 @@
 
 <img width="706" alt="image" src="https://github.com/user-attachments/assets/6fe65b1b-a591-4eae-af28-4b5d028774c5">
 
+## Plan and Execute
+
+LLM의 output token과 관련하여 [Anthropic의 Claude3의 경우](https://docs.anthropic.com/en/docs/about-claude/models)의 경우에 4k를 제공하고 있습니다. 일반적인 Q&A에서는 충분한 크기이지만, 장문의 글은 4k보다는 큰 출력을 요구합니다. 또한, 사람은 긴글을 작성하기 먼저 목차를 정하고 상세한 내용을 채워가는 방식을 일반적으로 사용합니다. 이러한 목적을 위해서는 여기에서는 Plan and execute 패턴을 사용하여 먼저 목차를 정하고 각 세부내용을 작성하고자 합니다. 이러한 패턴은 여러번의 LLM 출력을 이용할 수 있으므로 출력 토큰수의 제한에 영향을 받지 않습니다.
+
+
 사용자의 instruction은 plan_node에서 n개의 plan을 생성합니다. execution_node는 instruction, plans와 현재의 step을 이용하여 draft를 생성합니다. n개의 draft들이 생성됩니다.
 
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/2020f67e-53bd-4d10-995d-d88c952f7f83">
+
+## Revise를 통해 글쓰기 개선
+
+일반적인 사람들의 글쓰기 처럼, 초안 작성후 지속적인 수정을 통해 글의 품질을 향상시킬 수 있습니다. 이러한 글쓰기에서 사람들은 다른 도서나, 인터넷등을 찾아서 참조함으로써 글의 완성도를 높일 수 있습니다. 
 
 revise_node에서는 drafts를 각각 reflect_node에서 reflections을 추출합니다. 또한 이때 최대 3개의 search_queries도 함께 추출하여 검색을 통해 contents를 수집합니다. reflection과 search_queries에 대한 contents를 이용하여 revise_answer에서는 질문을 업데이트합니다. 
 
