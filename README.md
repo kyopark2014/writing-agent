@@ -714,11 +714,11 @@ def should_continue(state: ReflectionState, config):
 
 ![image](https://github.com/user-attachments/assets/566981f1-ba1b-4219-a6d1-5e36595d4809)
 
-### 테스트 결과들
+### 결과 예제
 
 - [AWS의 생성형 AI 서비스에서 데이터를 수집하는 방법](./contents/AWS_AI_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%88%98%EC%A7%91_%EB%B0%A9%EB%B2%95.md)
 
-- [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](,/contents/Cloud_security_monitoring_and_threat_detection.md)
+- [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](./contents/Cloud_security_monitoring_and_threat_detection.md)
 
 - [adipocyte cells (3T3L1)과 macrophages co-culutre 실험을 어떻게 design할수 있을까 ?](./contents/Co-culturing_adipocytes_and_macrophages.md)
 
