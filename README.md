@@ -698,6 +698,24 @@ def should_continue(state: ReflectionState, config):
     return "continue"
 ```
 
+### RAG 사용
+
+여기에서는 Amazon Bedrock의 완전관리형 RAG 서비스인 Knowledge Base를 이용하고 있습니다. Knowledge Base는 Amazon S3에 파일을 올리거나, web crawler를 이용해 하위 URL까지 문서를 가져올 수 있어서 편리합니다. 설치하는 방법은 [Knowledge Base로 Advanced RAG 구현](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/knowledge-base.md)을 참조합니다. 
+
+## 직접 실습 해보기
+
+### 사전 준비 사항
+
+이 솔루션을 사용하기 위해서는 사전에 아래와 같은 준비가 되어야 합니다.
+
+- [AWS Account 생성](https://repost.aws/ko/knowledge-center/create-and-activate-aws-account)
+
+
+
+### CDK를 이용한 인프라 설치
+[인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
+
+
 ## 실행결과
 
 "VPC와 VPC를 안전하게 연결하고 연결후 동작을 확인하는 방법"이라고 입력하면 아래와 같은 결과를 얻을 수 있습니다.
