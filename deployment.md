@@ -82,5 +82,6 @@ cdk deploy --require-approval never --all
 
 [Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여,  [tavilyapikey-writing-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-writing-agent&region=us-west-2), [langsmithapikey-writing-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-writing-agent&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
 
-10) Output의 WebUrlforstreamchatbot의 URL로 접속합니다. 만약 Credential을 입력 전에 URL을 접속을 했다면, Lambda를 재배포하거나 일정 시간후에 Lamba가 내려갈때까지 기다렸다가 재접속하여야 하므로, Credential들을 입력 후에 URL로 접속하는것이 좋습니다. 
+Output의 WebUrlforstreamchatbot의 URL로 접속합니다. 만약 Credential을 입력 전에 URL을 접속을 했다면, Lambda를 재배포하거나 일정 시간후에 Lamba가 내려갈때까지 기다렸다가 재접속하여야 하므로, Credential들을 입력 후에 URL로 접속하는것이 좋습니다. 
 
+11) RAG를 사용하기를 원하는 경우에 Amazon Bedrock Knowledge Base를 [knowledge-base.md](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/knowledge-base.md)에 따라 설정합니다. 여기에서는 knowledge base의 이름으로 "aws-rag"을 사용하고 있습니다. knowledge_base_id를 구하기 위하여 knowledge base의 이름을 이용하고 있으므로, knowledge base의 이름을 변경할 경우에는 [cdk-writing-agent-stack.ts](./cdk-writing-agent/lib/cdk-writing-agent-stack.ts)에서 "knowledge_base_name"을 수정후에 재배포합니다.
