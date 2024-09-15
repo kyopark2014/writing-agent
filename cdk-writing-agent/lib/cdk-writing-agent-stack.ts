@@ -442,6 +442,17 @@ export class CdkWritingAgentStack extends cdk.Stack {
       }),
     );  
 
+    const langsmithApiSecret = new secretsmanager.Secret(this, `weather-langsmith-secret-for-${projectName}`, {
+      description: 'secret for lamgsmith api key', // openweathermap
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      secretName: `langsmithapikey-${projectName}`,
+      secretObjectValue: {
+        langchain_project: cdk.SecretValue.unsafePlainText(projectName),
+        langsmith_api_key: cdk.SecretValue.unsafePlainText(''),
+      }, 
+    });
+    langsmithApiSecret.grantRead(roleLambdaWebsocket) 
+
     const tavilyApiSecret = new secretsmanager.Secret(this, `weather-tavily-secret-for-${projectName}`, {
       description: 'secret for lamgsmith api key', // openweathermap
       removalPolicy: cdk.RemovalPolicy.DESTROY,
