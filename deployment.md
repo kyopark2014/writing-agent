@@ -2,7 +2,7 @@
 
 ## Bedrock 사용 권한 설정하기
 
-LLM으로 Anthropic의 Claude3을 사용하기 위하여, Amazon Bedrock의 us-west-2 리전을 사용합니다. [Model access](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess)에 접속해서 [Edit]를 선택하여 "Titan Text Embeddings V2"와 "Anthropic Claude3 Sonnet"을 Vector Embedding과 LLM을 위해 enable 합니다.
+LLM으로 Anthropic의 Claude 3을 사용하기 위하여, Amazon Bedrock의 us-west-2, us-east-1, ca-central-1, eu-west-2, sa-east-1 리전을 사용합니다. [Amazon Bedrock Console](https://console.aws.amazon.com/bedrock)의 [Model access]에 접속해서 [Edit]를 선택하여 "Anthropic Claude3 Sonnet"을 enable 합니다.
 
 ![image](https://github.com/user-attachments/assets/f259bb17-cbd4-4f9e-8025-6552953a5899)
 
@@ -38,13 +38,13 @@ chmod a+rx resize.sh && ./resize.sh 80
 4) 소스를 다운로드합니다.
 
 ```java
-git clone https://github.com/kyopark2014/langgraph-agent
+git clone https://github.com/kyopark2014/writing-agent
 ```
 
 5) cdk 폴더로 이동하여 필요한 라이브러리를 설치합니다.
 
 ```java
-cd langgraph-agent/cdk-langgraph-agent/ && npm install
+cd writing-agent/cdk-writing-agent/ && npm install
 ```
 
 7) CDK 사용을 위해 Boostraping을 수행합니다.
@@ -76,17 +76,9 @@ cdk deploy --require-approval never --all
 ![noname](https://github.com/user-attachments/assets/f7971246-3b38-441e-935c-b1ebfd5b3be9)
 
     
-
-9) Hybrid 검색을 위한 Nori Plug-in 설치
-
-[OpenSearch Console](https://us-west-2.console.aws.amazon.com/aos/home?region=us-west-2#opensearch/domains)에서 "langgraph-agent"로 들어가서 [Packages] - [Associate package]을 선택한 후에, 아래와 같이 "analysis-nori"을 설치합니다. 
-
-![image](https://github.com/user-attachments/assets/9297a93a-cf25-4fea-aae1-8b6b00e79949)
-
 10) API에 대한 Credential을 획득하고 입력합니다.
 
 - 일반 검색을 위하여 [Tavily Search](https://app.tavily.com/sign-in)에 접속하여 가입 후 API Key를 발급합니다. 이것은 tvly-로 시작합니다.
-- 날씨 검색을 위하여 [openweathermap](https://home.openweathermap.org/api_keys)에 접속하여 API Key를 발급합니다.
 - [langsmith.md](./langsmith.md)를 참조하여 [LangSmith](https://www.langchain.com/langsmith)에 가입후 API Key를 발급 받습니다.
 
 [Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여, [openweathermap-langgraph-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=openweathermap-langgraph-agent&region=us-west-2), [tavilyapikey-langgraph-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-langgraph-agent&region=us-west-2), [langsmithapikey-langgraph-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-langgraph-agent&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
