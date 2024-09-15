@@ -14,11 +14,9 @@ from io import BytesIO
 from urllib import parse
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
-from langchain.chains.summarize import load_summarize_chain
 from langchain_core.prompts import MessagesPlaceholder, ChatPromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_aws import ChatBedrock
-from langchain_aws import BedrockEmbeddings
 from multiprocessing import Process, Pipe
 
 from langchain_community.tools.tavily_search import TavilySearchResults
@@ -40,44 +38,11 @@ debugMessageMode = os.environ.get('debugMessageMode', 'false')
 projectName = os.environ.get('projectName')
 LLM_for_chat = json.loads(os.environ.get('LLM_for_chat'))
 LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
-LLM_embedding = json.loads(os.environ.get('LLM_embedding'))
 selected_chat = 0
 selected_multimodal = 0
-selected_embedding = 0
-separated_chat_history = os.environ.get('separated_chat_history')
-useParrelWebSearch = True
-useEnhancedSearch = True
+useEnhancedSearch = False
 
 knowledge_base_name = os.environ.get('knowledge_base_name')
-
-"""  
-multi_region_models = [  # claude sonnet 3.5
-    {
-        "bedrock_region": "us-west-2", # Oregon
-        "model_type": "claude3.5",
-        "max_tokens": 4096,
-        "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
-    },
-    {
-        "bedrock_region": "us-east-1", # N.Virginia
-        "model_type": "claude3.5",
-        "max_tokens": 4096,
-        "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
-    },
-    {
-        "bedrock_region": "eu-central-1", # Frankfurt
-        "model_type": "claude3.5",
-        "max_tokens": 4096,
-        "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
-    },
-    {
-        "bedrock_region": "ap-northeast-1", # Tokyo
-        "model_type": "claude3.5",
-        "max_tokens": 4096,
-        "model_id": "anthropic.claude-3-5-sonnet-20240620-v1:0"
-    }
-]
-"""
     
 multi_region_models = [   # claude sonnet 3.0
     {   
@@ -114,19 +79,8 @@ multi_region_models = [   # claude sonnet 3.0
 multi_region = 'disable'
 
 reference_docs = []
-# api key to get weather information in agent
-secretsmanager = boto3.client('secretsmanager')
-try:
-    get_weather_api_secret = secretsmanager.get_secret_value(
-        SecretId=f"openweathermap-{projectName}"
-    )
-    #print('get_weather_api_secret: ', get_weather_api_secret)
-    secret = json.loads(get_weather_api_secret['SecretString'])
-    #print('secret: ', secret)
-    weather_api_key = secret['weather_api_key']
 
-except Exception as e:
-    raise e
+secretsmanager = boto3.client('secretsmanager')
    
 # api key to use LangSmith
 langsmith_api_key = ""
@@ -296,36 +250,6 @@ def get_multimodal():
     
     return multimodal
     
-def get_embedding():
-    global selected_embedding
-    profile = LLM_embedding[selected_embedding]
-    bedrock_region =  profile['bedrock_region']
-    model_id = profile['model_id']
-    print(f'selected_embedding: {selected_embedding}, bedrock_region: {bedrock_region}, model_id: {model_id}')
-    
-    # bedrock   
-    boto3_bedrock = boto3.client(
-        service_name='bedrock-runtime',
-        region_name=bedrock_region, 
-        config=Config(
-            retries = {
-                'max_attempts': 30
-            }
-        )
-    )
-    
-    bedrock_embedding = BedrockEmbeddings(
-        client=boto3_bedrock,
-        region_name = bedrock_region,
-        model_id = model_id
-    )  
-    
-    selected_embedding = selected_embedding + 1
-    if selected_embedding == len(LLM_embedding):
-        selected_embedding = 0
-    
-    return bedrock_embedding
-
 # load documents from s3 for pdf and txt
 def load_document(file_type, s3_file_name):
     s3r = boto3.resource("s3")
@@ -518,11 +442,6 @@ def general_conversation(connectionId, requestId, chat, query):
     
     return msg
 
-class GradeDocuments(BaseModel):
-    """Binary score for relevance check on retrieved documents."""
-
-    binary_score: str = Field(description="Documents are relevant to the question, 'yes' or 'no'")
-
 def get_retrieval_grader(chat):
     system = """You are a grader assessing relevance of a retrieved document to a user question. \n 
     If the document contains keyword(s) or semantic meaning related to the question, grade it as relevant. \n
@@ -588,45 +507,7 @@ def grade_documents_using_parallel_processing(question, documents):
     
     #print('filtered_docs: ', filtered_docs)
     return filtered_docs
-
-def tavily_search(conn, q, k):     
-    search = TavilySearchResults(max_results=k) 
-    response = search.invoke(q)     
-    print('response: ', response)
     
-    content = []
-    for r in response:
-        if 'content' in r:
-            content.append(r['content'])
-        
-    conn.send(content)    
-    conn.close()
-    
-def tavily_search_using_parallel_processing(quries):
-    content = []    
-
-    processes = []
-    parent_connections = []
-    
-    k = 2
-    for i, q in enumerate(quries):
-        parent_conn, child_conn = Pipe()
-        parent_connections.append(parent_conn)
-                    
-        process = Process(target=tavily_search, args=(child_conn, q, k))
-        processes.append(process)
-        
-    for process in processes:
-        process.start()
-            
-    for parent_conn in parent_connections:
-        content += parent_conn.recv()
-        
-    for process in processes:
-        process.join()
-    
-    return content
-
 def print_doc(doc):
     if len(doc.page_content)>=100:
         text = doc.page_content[:100]
@@ -673,46 +554,6 @@ def grade_documents(question, documents):
     
     # print('len(docments): ', len(filtered_docs))    
     return filtered_docs
-
-def web_search(question, documents):
-    global reference_docs
-    
-    # Web search
-    web_search_tool = TavilySearchResults(max_results=3)
-    
-    docs = web_search_tool.invoke({"query": question})
-    # print('web_search: ', len(docs))
-    
-    for d in docs:
-        print("d: ", d)
-        if 'content' in d:
-            web_results = "\n".join(d["content"])
-            
-    #web_results = "\n".join([d["content"] for d in docs])
-    web_results = Document(page_content=web_results)
-    # print("web_results: ", web_results)
-    
-    if documents is not None:
-        documents.append(web_results)
-    else:
-        documents = [web_results]
-    
-    # for reference
-    for d in docs:
-        content = d.get("content")
-        url = d.get("url")
-                
-        reference_docs.append(
-            Document(
-                page_content=content,
-                metadata={
-                    'name': 'WWW',
-                    'uri': url,
-                    'from': 'tavily'
-                },
-            )
-        )
-    return documents
 
 class GradeDocuments(BaseModel):
     """Binary score for relevance check on retrieved documents."""
@@ -793,59 +634,6 @@ class GradeDocuments(BaseModel):
 ####################### LangGraph #######################
 # Long term Writing Agent
 #########################################################
-
-def get_planner(query):
-    if isKorean(query):
-        planner_template = (
-            "당신은 장문 작성에 능숙한 유능한 글쓰기 도우미입니다."
-            "이번 글쓰기는 20,000 단어 이상의 장편을 목표로 합니다."
-            "당신은 글쓰기 지시 사항을 여러 개의 하위 작업으로 나눌 것입니다."
-            "각 하위 작업은 에세이의 한 단락 작성을 안내할 것이며, 해당 단락의 주요 내용과 단어 수 요구 사항을 포함해야 합니다."
-
-            "글쓰기 지시 사항:"
-            "<instruction>"
-            "{instruction}"
-            "<instruction>"
-                
-            "다음 형식으로 나누어 주시기 바랍니다. 각 하위 작업은 한 줄을 차지합니다:"
-            "1. Main Point: [문단의 주요 내용을 자세히 설명하십시오.], Word Count: [Word count requirement, e.g., 800 words]"
-            "2. Main Point: [문단의 주요 내용을 자세히 설명하십시오.], Word Count: [word count requirement, e.g. 1500 words]."
-            "..."
-                
-            "각 하위 작업이 명확하고 구체적인지, 그리고 모든 하위 작업이 작문 지시 사항의 전체 내용을 다루고 있는지 확인하세요."
-            "과제를 너무 세분화하지 마세요. 각 하위 과제의 문단은 500단어 이상 3000단어 이하여야 합니다."
-            "다른 내용은 출력하지 마십시오. 이것은 진행 중인 작업이므로 열린 결론이나 다른 수사학적 표현을 생략하십시오."                
-        )
-    else:
-        planner_template = (
-            "You are a helpful assistant highly skilled in long-form writing."
-            "This writing aims for a novel of over 20,000 words."
-            "You will break down the writing instruction into multiple subtasks."
-            "Each subtask will guide the writing of one paragraph in the essay, and should include the main points and word count requirements for that paragraph."
-
-            "The writing instruction is as follows:"
-            "<instruction>"
-            "{instruction}"
-            "<instruction>"
-                
-            "Please break it down in the following format, with each subtask taking up one line:"
-            "1. Main Point: [Describe the main point of the paragraph, in detail], Word Count: [Word count requirement, e.g., 800 words]"
-            "2. Main Point: [Describe the main point of the paragraph, in detail], Word Count: [word count requirement, e.g. 1500 words]."
-            "..."
-                
-            "Make sure that each subtask is clear and specific, and that all subtasks cover the entire content of the writing instruction."
-            "Do not split the subtasks too finely; each subtask's paragraph should be no less than 500 words and no more than 3000 words."
-            "Do not output any other content. As this is an ongoing work, omit open-ended conclusions or other rhetorical hooks."                
-        )
-        
-    planner_prompt = ChatPromptTemplate([
-        ('human', planner_template) 
-    ])
-                
-    chat = get_chat()
-        
-    planner = planner_prompt | chat
-    return planner
     
 # Workflow - Reflection
 class ReflectionState(TypedDict):
@@ -913,6 +701,74 @@ def reflect_node(state: ReflectionState):
         "search_queries": search_queries,
         "revision_number": revision_number + 1
     }
+
+knowledge_base_id = None
+def retrieve_from_knowledge_base(query):
+    global knowledge_base_id
+    if not knowledge_base_id:        
+        client = boto3.client('bedrock-agent')         
+        response = client.list_knowledge_bases(
+            maxResults=10
+        )
+        print('response: ', response)
+                
+        if "knowledgeBaseSummaries" in response:
+            summaries = response["knowledgeBaseSummaries"]
+            for summary in summaries:
+                if summary["name"] == knowledge_base_name:
+                    knowledge_base_id = summary["knowledgeBaseId"]
+                    print('knowledge_base_id: ', knowledge_base_id)
+                    break
+    
+    relevant_docs = []
+    if knowledge_base_id:    
+        retriever = AmazonKnowledgeBasesRetriever(
+            knowledge_base_id=knowledge_base_id, 
+            retrieval_config={"vectorSearchConfiguration": {"numberOfResults": 2}},
+        )
+        
+        relevant_docs = retriever.invoke(query)
+        print(relevant_docs)
+    
+    docs = []
+    for i, document in enumerate(relevant_docs):
+        print(f"{i}: {document.page_content}")
+        if document.page_content:
+            excerpt = document.page_content
+        
+        score = document.metadata["score"]
+        print('score:', score)
+        doc_prefix = "knowledge-base"
+        
+        link = ""
+        if "s3Location" in document.metadata["location"]:
+            link = document.metadata["location"]["s3Location"]["uri"] if document.metadata["location"]["s3Location"]["uri"] is not None else ""
+            
+            print('link:', link)    
+            pos = link.find(f"/{doc_prefix}")
+            name = link[pos+len(doc_prefix)+1:]
+            encoded_name = parse.quote(name)
+            print('name:', name)
+            link = f"{path}{doc_prefix}{encoded_name}"
+            
+        elif "webLocation" in document.metadata["location"]:
+            link = document.metadata["location"]["webLocation"]["url"] if document.metadata["location"]["webLocation"]["url"] is not None else ""
+            name = "WWW"
+
+        print('link:', link)                    
+        # reference = reference + f"{i+1}. <a href={link} target=_blank>{name}</a>, <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
+
+        docs.append(
+            Document(
+                page_content=excerpt,
+                metadata={
+                    'name': name,
+                    'uri': link,
+                    'from': 'RAG'
+                },
+            )
+        )
+    return docs
         
 def revise_draft(state: ReflectionState):   
     print("###### revise_answer ######")
@@ -966,43 +822,50 @@ def revise_draft(state: ReflectionState):
         ('human', revise_template)
     ])
             
-    content = []     
+    content = []               
+    related_docs = []     
+    
+    # RAG - knowledge base        
+    for q in search_queries:
+        docs = retrieve_from_knowledge_base(q)
+        print(f'q: {q}, RAG: {docs}')
         
-    global useEnhancedSearch
-    useEnhancedSearch = False   
-        
-    if useEnhancedSearch:
-        for q in search_queries:
-            response = enhanced_search(q)     
-            print(f'q: {q}, response: {response}')
-            content.append(response)                   
-    else:
-        search = TavilySearchResults(max_results=2)
-            
-        related_docs = []                        
-        for q in search_queries:
-            response = search.invoke(q)
-            print(f'q: {q}, response: {response}')
+        if len(docs):
+            related_docs += docs
+    
+    # web search
+    search = TavilySearchResults(max_results=2)
+    for q in search_queries:
+        response = search.invoke(q)
+        print(f'q: {q}, response: {response}')
                 
-            docs = filtered_docs = []
-            for r in response:
-                if 'content' in r:
-                    # content.append(r['content'])
+        docs = []
+        for r in response:
+            if 'content' in r:
+                content = r.get("content")
+                url = r.get("url")
                         
-                    docs.append(
-                        Document(
-                            page_content=r['content']
-                        )
+                docs.append(
+                    Document(
+                        page_content=content,
+                        metadata={
+                            'name': 'WWW',
+                            'uri': url,
+                            'from': 'tavily'
+                        },
                     )
+                )
                 
-            print('docs: ', docs)
+        print('docs from web search: ', docs)
+        related_docs += docs
+    
+    filtered_docs = []
+    if len(related_docs):
+        filtered_docs = grade_documents(q, docs)
+        print('filtered_docs: ', filtered_docs)
                 
-            if len(docs):
-                filtered_docs = grade_documents(q, docs)
-                print('filtered_docs: ', filtered_docs)
-                
-                if len(filtered_docs):
-                    related_docs += filtered_docs
+        if len(filtered_docs):
+            related_docs += filtered_docs
             
         for d in related_docs:
             content.append(d.page_content)
@@ -1035,7 +898,7 @@ def revise_draft(state: ReflectionState):
     revision_number = state["revision_number"] if state.get("revision_number") is not None else 1
         
     return {
-        "revised_draft": revised_draft,            
+        "revised_draft": revised_draft,
         "revision_number": revision_number
     }
         
@@ -1085,7 +948,56 @@ def plan_node(state: State):
     instruction = state["instruction"]
     print('subject: ', instruction)
         
-    planner = get_planner(instruction)
+    if isKorean(instruction):
+        planner_template = (
+            "당신은 장문 작성에 능숙한 유능한 글쓰기 도우미입니다."
+            "이번 글쓰기는 20,000 단어 이상의 장편을 목표로 합니다."
+            "당신은 글쓰기 지시 사항을 여러 개의 하위 작업으로 나눌 것입니다."
+            "각 하위 작업은 에세이의 한 단락 작성을 안내할 것이며, 해당 단락의 주요 내용과 단어 수 요구 사항을 포함해야 합니다."
+
+            "글쓰기 지시 사항:"
+            "<instruction>"
+            "{instruction}"
+            "<instruction>"
+                
+            "다음 형식으로 나누어 주시기 바랍니다. 각 하위 작업은 한 줄을 차지합니다:"
+            "1. Main Point: [문단의 주요 내용을 자세히 설명하십시오.], Word Count: [Word count requirement, e.g., 800 words]"
+            "2. Main Point: [문단의 주요 내용을 자세히 설명하십시오.], Word Count: [word count requirement, e.g. 1500 words]."
+            "..."
+                
+            "각 하위 작업이 명확하고 구체적인지, 그리고 모든 하위 작업이 작문 지시 사항의 전체 내용을 다루고 있는지 확인하세요."
+            "과제를 너무 세분화하지 마세요. 각 하위 과제의 문단은 500단어 이상 3000단어 이하여야 합니다."
+            "다른 내용은 출력하지 마십시오. 이것은 진행 중인 작업이므로 열린 결론이나 다른 수사학적 표현을 생략하십시오."                
+        )
+    else:
+        planner_template = (
+            "You are a helpful assistant highly skilled in long-form writing."
+            "This writing aims for a novel of over 20,000 words."
+            "You will break down the writing instruction into multiple subtasks."
+            "Each subtask will guide the writing of one paragraph in the essay, and should include the main points and word count requirements for that paragraph."
+
+            "The writing instruction is as follows:"
+            "<instruction>"
+            "{instruction}"
+            "<instruction>"
+                
+            "Please break it down in the following format, with each subtask taking up one line:"
+            "1. Main Point: [Describe the main point of the paragraph, in detail], Word Count: [Word count requirement, e.g., 800 words]"
+            "2. Main Point: [Describe the main point of the paragraph, in detail], Word Count: [word count requirement, e.g. 1500 words]."
+            "..."
+                
+            "Make sure that each subtask is clear and specific, and that all subtasks cover the entire content of the writing instruction."
+            "Do not split the subtasks too finely; each subtask's paragraph should be no less than 500 words and no more than 3000 words."
+            "Do not output any other content. As this is an ongoing work, omit open-ended conclusions or other rhetorical hooks."                
+        )
+        
+    planner_prompt = ChatPromptTemplate([
+        ('human', planner_template) 
+    ])
+                
+    chat = get_chat()
+        
+    planner = planner_prompt | chat
     
     response = planner.invoke({"instruction": instruction})
     print('response: ', response.content)
@@ -1421,145 +1333,7 @@ def run_long_form_writing_agent(connectionId, requestId, query):
     print('output: ', output)
     
     return output['final_doc']
-            
-####################### Knowledge Base #######################
-# Knowledge Base
-##############################################################
-
-def query_using_RAG_context(connectionId, requestId, chat, context, revised_question):    
-    if isKorean(revised_question)==True:
-        system = (
-            """다음의 <context> tag안의 참고자료를 이용하여 상황에 맞는 구체적인 세부 정보를 충분히 제공합니다. Assistant의 이름은 서연이고, 모르는 질문을 받으면 솔직히 모른다고 말합니다.
-            
-            <context>
-            {context}
-            </context>"""
-        )
-    else: 
-        system = (
-            """Here is pieces of context, contained in <context> tags. Provide a concise answer to the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer.
-            
-            <context>
-            {context}
-            </context>"""
-        )
-    
-    human = "{input}"
-    
-    prompt = ChatPromptTemplate.from_messages([("system", system), ("human", human)])
-    print('prompt: ', prompt)
-                   
-    chain = prompt | chat
-    
-    try: 
-        isTyping(connectionId, requestId)  
-        stream = chain.invoke(
-            {
-                "context": context,
-                "input": revised_question,
-            }
-        )
-        msg = readStreamMsg(connectionId, requestId, stream.content)    
-        print('msg: ', msg)
-        
-    except Exception:
-        err_msg = traceback.format_exc()
-        print('error message: ', err_msg)        
-            
-        sendErrorMessage(connectionId, requestId, err_msg)    
-        raise Exception ("Not able to request to LLM")
-
-    return msg
-
-def get_reference_of_knoweledge_base(docs, path, doc_prefix):
-    reference = "\n\nFrom\n"
-    #print('path: ', path)
-    #print('doc_prefix: ', doc_prefix)
-    #print('prefix: ', f"/{doc_prefix}")
-    
-    for i, document in enumerate(docs):
-        if document.page_content:
-            excerpt = document.page_content
-        
-        score = document.metadata["score"]
-        print('score:', score)
-        doc_prefix = "knowledge-base"
-        
-        link = ""
-        if "s3Location" in document.metadata["location"]:
-            link = document.metadata["location"]["s3Location"]["uri"] if document.metadata["location"]["s3Location"]["uri"] is not None else ""
-            
-            print('link:', link)    
-            pos = link.find(f"/{doc_prefix}")
-            name = link[pos+len(doc_prefix)+1:]
-            encoded_name = parse.quote(name)
-            print('name:', name)
-            link = f"{path}{doc_prefix}{encoded_name}"
-            
-        elif "webLocation" in document.metadata["location"]:
-            link = document.metadata["location"]["webLocation"]["url"] if document.metadata["location"]["webLocation"]["url"] is not None else ""
-            name = "WWW"
-
-        print('link:', link)
-                    
-        reference = reference + f"{i+1}. <a href={link} target=_blank>{name}</a>, <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
-                    
-    return reference
-
-knowledge_base_id = None
-def get_answer_using_knowledge_base(chat, text, connectionId, requestId):    
-    revised_question = text # use original question for test
- 
-    global knowledge_base_id
-    if not knowledge_base_id:        
-        client = boto3.client('bedrock-agent')         
-        response = client.list_knowledge_bases(
-            maxResults=10
-        )
-        print('response: ', response)
                 
-        if "knowledgeBaseSummaries" in response:
-            summaries = response["knowledgeBaseSummaries"]
-            for summary in summaries:
-                if summary["name"] == knowledge_base_name:
-                    knowledge_base_id = summary["knowledgeBaseId"]
-                    print('knowledge_base_id: ', knowledge_base_id)
-                    break
-    
-    msg = reference = ""
-    relevant_docs = []
-    if knowledge_base_id:    
-        retriever = AmazonKnowledgeBasesRetriever(
-            knowledge_base_id=knowledge_base_id, 
-            retrieval_config={"vectorSearchConfiguration": {"numberOfResults": 4}},
-        )
-        
-        relevant_docs = retriever.invoke(revised_question)
-        print(relevant_docs)
-        
-        #selected_relevant_docs = []
-        #if len(relevant_docs)>=1:
-        #    print('start priority search')
-        #    selected_relevant_docs = priority_search(revised_question, relevant_docs, minDocSimilarity)
-        #    print('selected_relevant_docs: ', json.dumps(selected_relevant_docs))
-        
-    relevant_context = ""
-    for i, document in enumerate(relevant_docs):
-        print(f"{i}: {document}")
-        if document.page_content:
-            content = document.page_content
-            
-        relevant_context = relevant_context + content + "\n\n"
-        
-    print('relevant_context: ', relevant_context)
-
-    msg = query_using_RAG_context(connectionId, requestId, chat, relevant_context, revised_question)
-    
-    if len(relevant_docs):
-        reference = get_reference_of_knoweledge_base(relevant_docs, path, doc_prefix)  
-        
-    return msg, reference
-    
 #########################################################
 def traslation(chat, text, input_language, output_language):
     system = (
