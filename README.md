@@ -1,5 +1,10 @@
 # Writing Agent 구현하기
 
+<p align="left">
+    <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fkyopark2014%2Fwriting-agent&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com"/></a>
+    <img alt="License" src="https://img.shields.io/badge/LICENSE-MIT-green">
+</p>
+
 아래와 같은 용도로 LLM Agent를 사용하는 사람들을 위해 만들었습니다.
 
 1) LLM이 한번에 사용하는 토큰 따위는 관심이 없고 그냥 결과만 좋았으면 좋겠다는 사람
