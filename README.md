@@ -11,6 +11,13 @@
 여기서 좌측의 Plan and Execute 워크플로우는 아래와 같이 정의합니다.
 
 ```python
+class State(TypedDict):
+    instruction : str
+    planning_steps : List[str]
+    drafts : List[str]
+    final_doc : str
+    word_count : int
+
 def buildLongTermWriting():
     workflow = StateGraph(State)
 
@@ -33,6 +40,13 @@ def buildLongTermWriting():
 우측 Reflection 워크플로우와 같이 각 문단은 Reflection 패턴을 이용하여 문장을 향상시킵니다. 이때 Reflection에 대한 워크플로우는 아래와 같습니다.
 
 ```python
+class ReflectionState(TypedDict):
+    draft : str
+    reflection : List[str]
+    search_queries : List[str]
+    revised_draft: str
+    revision_number: int
+
 def buildReflection():
     workflow = StateGraph(ReflectionState)
 
@@ -407,7 +421,68 @@ revise_node에서는 drafts를 각각 reflect_node에서 reflections을 추출�
 ![image](https://github.com/user-attachments/assets/be4efa7d-8e93-419e-a46c-2c0eb9f41400)
 
 
-Reflection과 search_queries를 구하기 위한 Research 클래스를 정의합니다. 이 방식은 [Reflexion](https://github.com/kyopark2014/langgraph-agent/blob/main/reflexion-agent.md)의 AnswerQuestion/Reflectin을 참조하여 구현하였습니다.
+Reflection과 search_queries를 구하기 위한 Research 클래스와 [Structured Output](https://github.com/kyopark2014/langgraph-agent/blob/main/structured-output.md)를 이용합니다. 이 방식은 [Reflexion](https://github.com/kyopark2014/langgraph-agent/blob/main/reflexion-agent.md)의 AnswerQuestion/Reflectin을 참조하여 구현하였습니다.
+
+```python
+class Reflection(BaseModel):
+    missing: str = Field(description="Critique of what is missing.")
+    advisable: str = Field(description="Critique of what is helpful for better writing")
+    superfluous: str = Field(description="Critique of what is superfluous")
+
+class Research(BaseModel):
+    """Provide reflection and then follow up with search queries to improve the writing."""
+
+    reflection: Reflection = Field(description="Your reflection on the initial writing.")
+    search_queries: list[str] = Field(
+        description="1-3 search queries for researching improvements to address the critique of your current writing."
+    )
+    
+def reflect_node(state: ReflectionState):
+    print("###### reflect ######")
+    draft = state['draft']
+    print('draft: ', draft)
+    
+    reflection = []
+    search_queries = []
+    for attempt in range(5):
+        chat = get_chat()
+        structured_llm = chat.with_structured_output(Research, include_raw=True)
+            
+        info = structured_llm.invoke(draft)
+        print(f'attempt: {attempt}, info: {info}')
+                
+        if not info['parsed'] == None:
+            parsed_info = info['parsed']
+            reflection = [parsed_info.reflection.missing, parsed_info.reflection.advisable]
+            search_queries = parsed_info.search_queries
+                
+            print('reflection: ', parsed_info.reflection)            
+            print('search_queries: ', search_queries)     
+        
+            if isKorean(draft):
+                translated_search = []
+                for q in search_queries:
+                    chat = get_chat()
+                    if isKorean(q):
+                        search = traslation(chat, q, "Korean", "English")
+                    else:
+                        search = traslation(chat, q, "English", "Korean")
+                    translated_search.append(search)
+                        
+                print('translated_search: ', translated_search)
+                search_queries += translated_search
+
+            print('search_queries (mixed): ', search_queries)
+            break
+        
+    revision_number = state["revision_number"] if state.get("revision_number") is not None else 1
+    return {
+        "reflection": reflection,
+        "search_queries": search_queries,
+        "revision_number": revision_number + 1
+    }
+```
+
 
 ## 실행결과
 
