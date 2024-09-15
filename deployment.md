@@ -2,7 +2,7 @@
 
 ## Bedrock 사용 권한 설정하기
 
-LLM으로 Anthropic의 Claude 3을 사용하기 위하여, Amazon Bedrock의 us-west-2, us-east-1, ca-central-1, eu-west-2, sa-east-1 리전을 사용합니다. [Amazon Bedrock Console](https://console.aws.amazon.com/bedrock)의 [Model access]에 접속해서 [Edit]를 선택하여 "Anthropic Claude3 Sonnet"을 enable 합니다.
+LLM으로 Anthropic의 Claude 3을 사용하기 위하여, Amazon Bedrock의 us-west-2, us-east-1, ca-central-1, eu-west-2, sa-east-1 리전을 사용합니다. 각 리전의 [Amazon Bedrock Console](https://console.aws.amazon.com/bedrock)의 [Model access]에 접속해서 [Edit]를 선택하여 "Anthropic Claude3 Sonnet"을 enable 합니다.
 
 ![image](https://github.com/user-attachments/assets/f259bb17-cbd4-4f9e-8025-6552953a5899)
 
