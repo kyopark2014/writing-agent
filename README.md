@@ -732,7 +732,8 @@ def should_continue(state: ReflectionState, config):
 
 - [Bedrock agent에 대해 설명해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/%EB%B2%A0%EB%93%9C%EB%A1%9D_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%8A%94_%EA%B0%95%ED%99%94%ED%95%99%EC%8A%B5_%EA%B8%B0%EB%B0%98_AI_%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%9E%85%EB%8B%88%EB%8B%A4.md)
 
+- [VPC와 VPC를 안전하게 연결하는 방법과, 연결이 잘되었는지 확인하는 방법에 대해 설명해주세요.](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8%EB%B0%A9%EB%B2%95.md)
 
-
+  
 
 
