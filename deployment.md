@@ -80,7 +80,7 @@ cdk deploy --require-approval never --all
 - 일반 검색을 위하여 [Tavily Search](https://app.tavily.com/sign-in)에 접속하여 가입 후 API Key를 발급합니다. 이것은 tvly-로 시작합니다.
 - [langsmith.md](./langsmith.md)를 참조하여 [LangSmith](https://www.langchain.com/langsmith)에 가입후 API Key를 발급 받습니다.
 
-[Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여,  [tavilyapikey-langgraph-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-langgraph-agent&region=us-west-2), [langsmithapikey-langgraph-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-langgraph-agent&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
+[Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여,  [tavilyapikey-writing-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-writing-agent&region=us-west-2), [langsmithapikey-writing-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-writing-agent&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
 
 10) Output의 WebUrlforstreamchatbot의 URL로 접속합니다. 만약 Credential을 입력 전에 URL을 접속을 했다면, Lambda를 재배포하거나 일정 시간후에 Lamba가 내려갈때까지 기다렸다가 재접속하여야 하므로, Credential들을 입력 후에 URL로 접속하는것이 좋습니다. 
 
