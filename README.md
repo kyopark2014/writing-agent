@@ -546,11 +546,20 @@ def revise_draft(state: ReflectionState):
             docs = filtered_docs = []
             for r in response:
                 if 'content' in r:
+                    content = r.get("content")
+                    url = r.get("url")
+                        
                     docs.append(
                         Document(
-                            page_content=r['content']
+                            page_content=content,
+                            metadata={
+                                'name': 'WWW',
+                                'uri': url,
+                                'from': 'tavily'
+                            },
                         )
                     )                
+
             if len(docs):
                 filtered_docs = grade_documents(q, docs)                
                 if len(filtered_docs):
@@ -592,7 +601,7 @@ def grade_documents(question, documents):
     return filtered_docs
 ```
 
-여기서 속도의 향상을 위해 문서에 대한 평가에도 병렬처리를 수행합니다. 문서의 관련도 평가는 GradeDocuments 클래스와 structured output을 아래와 같이 이용합니다.
+여기서 문서의 관련도 평가에도 병렬처리를 수행하면 속도를 개선합니다. 각각의 관련도 평가는 GradeDocuments 클래스와 structured output을 아래와 같이 이용합니다.
 
 ```python
 def grade_documents_using_parallel_processing(question, documents):
