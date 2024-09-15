@@ -753,7 +753,6 @@ def retrieve_from_knowledge_base(query):
             name = "Web Crawler"
 
         print('link:', link)                    
-        # reference = reference + f"{i+1}. <a href={link} target=_blank>{name}</a>, <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
 
         docs.append(
             Document(
