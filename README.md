@@ -478,14 +478,18 @@ def reflect_node(state: ReflectionState):
     }
 ```
 
-Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG + 웹검색 또는 웹검색(tavily)를 사용합니다. 
+Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG와 웹검색(tavily)를 사용합니다. 
 
 ```python
 def revise_draft(state: ReflectionState):   
-    print("###### revise_answer ######")        
+    print("###### revise_answer ######")
+        
     draft = state['draft']
     search_queries = state['search_queries']
     reflection = state['reflection']
+    print('draft: ', draft)
+    print('search_queries: ', search_queries)
+    print('reflection: ', reflection)
         
     if isKorean(draft):
         revise_template = (
@@ -529,41 +533,48 @@ def revise_draft(state: ReflectionState):
         ('human', revise_template)
     ])
             
-    content = []             
-    global useEnhancedSearch
-    useEnhancedSearch = False   
+    content = []               
+    related_docs = []     
+    
+    # RAG - knowledge base        
+    for q in search_queries:
+        docs = retrieve_from_knowledge_base(q)
+        print(f'q: {q}, RAG: {docs}')
         
-    if useEnhancedSearch:
-        for q in search_queries:
-            response = enhanced_search(q)     
-            content.append(response)                   
-    else:
-        search = TavilySearchResults(max_results=2)
-            
-        related_docs = []                        
-        for q in search_queries:
-            response = search.invoke(q)                
-            docs = filtered_docs = []
-            for r in response:
-                if 'content' in r:
-                    content = r.get("content")
-                    url = r.get("url")
+        if len(docs):
+            related_docs += docs
+    
+    # web search
+    search = TavilySearchResults(max_results=2)
+    for q in search_queries:
+        response = search.invoke(q)
+        print(f'q: {q}, response: {response}')
+                
+        docs = []
+        for r in response:
+            if 'content' in r:
+                content = r.get("content")
+                url = r.get("url")
                         
-                    docs.append(
-                        Document(
-                            page_content=content,
-                            metadata={
-                                'name': 'WWW',
-                                'uri': url,
-                                'from': 'tavily'
-                            },
-                        )
-                    )                
-
-            if len(docs):
-                filtered_docs = grade_documents(q, docs)                
-                if len(filtered_docs):
-                    related_docs += filtered_docs
+                docs.append(
+                    Document(
+                        page_content=content,
+                        metadata={
+                            'name': 'WWW',
+                            'uri': url,
+                            'from': 'tavily'
+                        },
+                    )
+                )                
+        related_docs += docs
+    
+    filtered_docs = []
+    if len(related_docs):
+        filtered_docs = grade_documents(q, docs)
+        print('filtered_docs: ', filtered_docs)
+                
+        if len(filtered_docs):
+            related_docs += filtered_docs
             
         for d in related_docs:
             content.append(d.page_content)
@@ -581,7 +592,7 @@ def revise_draft(state: ReflectionState):
     output = res.content
         
     revised_draft = output[output.find('<result>')+8:len(output)-9]
-            
+
     revision_number = state["revision_number"] if state.get("revision_number") is not None else 1
         
     return {
