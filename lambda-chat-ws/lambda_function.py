@@ -821,53 +821,45 @@ def revise_draft(state: ReflectionState):
     revise_prompt = ChatPromptTemplate([
         ('human', revise_template)
     ])
-            
-    content = []               
-    related_docs = []     
-    
+                              
+    filtered_docs = []    
     # RAG - knowledge base        
     for q in search_queries:
         docs = retrieve_from_knowledge_base(q)
         print(f'q: {q}, RAG: {docs}')
         
         if len(docs):
-            related_docs += docs
+            filtered_docs += grade_documents(q, docs)
     
     # web search
     search = TavilySearchResults(max_results=2)
     for q in search_queries:
         response = search.invoke(q)
-        print(f'q: {q}, response: {response}')
+        print(f'q: {q}, WEB: {response}')
                 
         docs = []
         for r in response:
-            if 'content' in r:
-                content = r.get("content")
-                url = r.get("url")
-                        
+            if 'content' in r:                        
                 docs.append(
                     Document(
-                        page_content=content,
+                        page_content=r.get("content"),
                         metadata={
                             'name': 'WWW',
-                            'uri': url,
+                            'uri': r.get("url"),
                             'from': 'tavily'
                         },
                     )
-                )
-                
+                )                
         print('docs from web search: ', docs)
-        related_docs += docs
-    
-    filtered_docs = []
-    if len(related_docs):
-        filtered_docs = grade_documents(q, docs)
-        print('filtered_docs: ', filtered_docs)
-                
-        if len(filtered_docs):
-            related_docs += filtered_docs
-            
-        for d in related_docs:
+        
+        if len(docs):
+            filtered_docs += grade_documents(q, docs)
+        
+    print('filtered_docs: ', filtered_docs)
+              
+    content = []   
+    if len(filtered_docs):
+        for d in filtered_docs:
             content.append(d.page_content)
         
     print('content: ', content)
