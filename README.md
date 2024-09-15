@@ -732,25 +732,27 @@ def should_continue(state: ReflectionState, config):
 
 ### 결과 예제
 
-- [AWS의 생성형 AI 서비스에서 데이터를 수집하는 방법](./contents/AWS_AI_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%88%98%EC%A7%91_%EB%B0%A9%EB%B2%95.md)
-
-- [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](./contents/Cloud_security_monitoring_and_threat_detection.md)
-
 - [adipocyte cells (3T3L1)과 macrophages co-culutre 실험을 어떻게 design할수 있을까 ?](./contents/Co-culturing_adipocytes_and_macrophages.md)
-
-- [지방 조직이 분비하는 exosome들이 어떻게 면역체계에 역할을 하고 어떻게 하면 좋은 exosome들을 분비시켜 당뇨나 병을 예방할수 있는지 알려주세요.](./contents/Exosomes_from_fat_tissue_regulate_immunity.md)
-
-- [AWS에서 ERP를 Cloud로 구축하는 방법](./contents/Deploying_ERP_on_AWS_Cloud.md)
-
-- [우주 여행을하면서 우주인을 만나는 여행에 대한 얘기를 해주세요. 여행지는 목성, 금성, 토성 입니다. 각 여행지에는 특별한 형태와 성격이 다양한 외계인이 있어요. 이들은 성경이 좋기도하고 괴팍하기도 하고 항상 슬프거나 즐겁기도 합니다. 각 별의 외계인의 성격은 마음껏 상상해도 됩니다. 우리는 이들과 우정을 쌓으면서 여행을 하게 되고 마지막에는 지구로 함께 돌아와 재미있게 놀 예정이에요.](./contents/Meeting_aliens_on_space_travel..md)
 
 - [Python으로 생성한 텍스트 파일을 열었을때 한글이 깨지는 경우에 대한 대응방법](./contents/Text_file_encoding_issue_in_Python.md)
 
-- [판타지 소설을 써줘. 간달프의 젋은 시절이 배경으로 그의 로멘스가 중심이 되었으면 좋겠어. 그는 뉴욕에 살명서 한국여자를 사랑하게 돼. 그래서 서울에 와서 즐거운 모험을 하는데 갑자기 제주에 팬션을 열었어. 거기서 이효리랑 친구가 되어서 나중에는 보이그룹으로 데뷰를 하고 이후에 일본에 가서 본격적인 활동을하는 내용이야.](./contents/%EA%B0%84%EB%8B%AC%ED%94%84%EC%9D%98_%EB%A1%9C%EB%A7%A8%ED%8B%B1_%EB%AA%A8%ED%97%98%EA%B3%BC_%EC%95%84%EC%9D%B4%EB%8F%8C_%ED%99%9C%EB%8F%99.md)
+- [지방 조직이 분비하는 exosome들이 어떻게 면역체계에 역할을 하고 어떻게 하면 좋은 exosome들을 분비시켜 당뇨나 병을 예방할수 있는지 알려주세요.](./contents/Exosomes_from_fat_tissue_regulate_immunity.md)
+
+- [AWS의 생성형 AI 서비스에서 데이터를 수집하는 방법](./contents/AWS_AI_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%88%98%EC%A7%91_%EB%B0%A9%EB%B2%95.md)
+
+- [AWS에서 ERP를 Cloud로 구축하는 방법](./contents/Deploying_ERP_on_AWS_Cloud.md)
+
+- [VPC와 VPC를 안전하게 연결하는 방법과, 연결이 잘되었는지 확인하는 방법에 대해 설명해주세요.](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8%EB%B0%A9%EB%B2%95.md)
+
+- [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](./contents/Cloud_security_monitoring_and_threat_detection.md)
 
 - [Bedrock agent에 대해 설명해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/%EB%B2%A0%EB%93%9C%EB%A1%9D_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%8A%94_%EA%B0%95%ED%99%94%ED%95%99%EC%8A%B5_%EA%B8%B0%EB%B0%98_AI_%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%9E%85%EB%8B%88%EB%8B%A4.md)
 
-- [VPC와 VPC를 안전하게 연결하는 방법과, 연결이 잘되었는지 확인하는 방법에 대해 설명해주세요.](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8%EB%B0%A9%EB%B2%95.md)
+- [우주 여행을하면서 우주인을 만나는 여행에 대한 얘기를 해주세요. 여행지는 목성, 금성, 토성 입니다. 각 여행지에는 특별한 형태와 성격이 다양한 외계인이 있어요. 이들은 성경이 좋기도하고 괴팍하기도 하고 항상 슬프거나 즐겁기도 합니다. 각 별의 외계인의 성격은 마음껏 상상해도 됩니다. 우리는 이들과 우정을 쌓으면서 여행을 하게 되고 마지막에는 지구로 함께 돌아와 재미있게 놀 예정이에요.](./contents/Meeting_aliens_on_space_travel..md)
+
+- [판타지 소설을 써줘. 간달프의 젋은 시절이 배경으로 그의 로멘스가 중심이 되었으면 좋겠어. 그는 뉴욕에 살명서 한국여자를 사랑하게 돼. 그래서 서울에 와서 즐거운 모험을 하는데 갑자기 제주에 팬션을 열었어. 거기서 이효리랑 친구가 되어서 나중에는 보이그룹으로 데뷰를 하고 이후에 일본에 가서 본격적인 활동을하는 내용이야.](./contents/%EA%B0%84%EB%8B%AC%ED%94%84%EC%9D%98_%EB%A1%9C%EB%A7%A8%ED%8B%B1_%EB%AA%A8%ED%97%98%EA%B3%BC_%EC%95%84%EC%9D%B4%EB%8F%8C_%ED%99%9C%EB%8F%99.md)
+
+
 
   
 
