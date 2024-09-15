@@ -716,12 +716,17 @@ def should_continue(state: ReflectionState, config):
 [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
 
 
-## 실행결과
+## 실행 및 결과확인 
 
-설치가 끝나면 WebClient에 접속합니다. 아래와 같이 User Id에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다. 이후 아래와 같이 "Long term writing"을 선택합니다. 
+### 실행 방법
+
+1) 설치가 끝나면 WebClient에 접속합니다. 아래와 같이 [User Id]에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다
+2) [Parallel Processing]을 "Enable"로 설정하면 병렬처리를 통해 속도를 향상시킬 수 있습니다.
+3) 실행 메뉴에서 아래와 같이 "Long term writing"을 선택합니다. 
 
 ![image](https://github.com/user-attachments/assets/2be97e7c-d1e8-4090-9bee-4fdc10827b9d)
 
+### 실행 결과
 
 "VPC와 VPC를 안전하게 연결하고 연결후 동작을 확인하는 방법"이라고 입력하면 아래와 같은 결과를 얻을 수 있습니다.
 
