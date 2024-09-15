@@ -18,7 +18,7 @@
 LangGraph로 Long term writing을 구현하기 위하여 아래와 같은 serverless architecture를 이용합니다. 이를 통해 트래픽이 없는 경우에는 비용이 거의 발생하지 않으며, 트래픽이 높아질때에는 자동으로 스케일 아웃(Scale out)함으로써 변화하는 트래픽에 효과적으로 대응할 수 있습니다.
 
 1) 사용자의 질문과 답변의 양방향 대화를 원할히 수행할 수 있도록 클라이언트와 애틀리케이션 서버간 연결에 WebSocket을 이용합니다. 이때 WebSocket의 Endpoint는 [WebSocket을 지원하는 API Gateway](https://docs.aws.amazon.com/ko_kr/apigateway/latest/developerguide/apigateway-websocket-api-overview.html)를 이용합니다. 이때 사용자의 입력은 json형태로 message-id와 converstion-type과 같은 정보를 포함합니다. 
-2) AWS Lambda는 사용자의 입력을 받으면 LangGraph의 Workflow를 이용하여 순차적으로 명령을 수행합니다. 여기서 사용자의 입력은 글쓰기를 위한 지시사항으로써, LangGraph의 [plan-and-execute 패턴](https://langchain-ai.github.io/langgraph/tutorials/plan-and-execute/plan-and-execute/#create-the-graph)에 따라 먼저 단계별로 글쓰는 주제를 선정합니다. 선정된 주제에 따라 초안(Draft)를 생성합니다.
+2) AWS Lambda는 사용자의 입력을 받으면 LangGraph의 Workflow를 이용하여 순차적으로 명령을 수행합니다. 여기서 사용자의 입력은 글쓰기를 위한 지시사항으로써, LangGraph의 [plan-and-execute 패턴](https://langchain-ai.github.io/langgraph/tutorials/plan-and-execute/plan-and-execute/#create-the-graph)에 따라 먼저 단계별로 글쓰는 주제를 선정합니다. 선정된 주제에 따라 초안(draft)를 생성합니다.
 3) [초안에 대한 reflection](https://blog.langchain.dev/reflection-agents/)을 통해 초안을 개선하기 위한 포인트를 찾고 검색을 통해 내용을 보강합니다. 여기서는 [Amazon Bedrock의 완전관리형 RAG 서비스인 Knowledge base](https://aws.amazon.com/ko/blogs/korea/knowledge-bases-now-delivers-fully-managed-rag-experience-in-amazon-bedrock/)를 이용하여 RAG를 검색하고 Tavily를 통해 검색한 컨텐츠를 사용합니다. Knowledge base는 Amazon S3에 업로드된 DOC, PDF, PPT뿐 아니라 웹크롤러 데이터 소스를 이용하여 인터넷의 다양한 데이터를 RAG로 사용할 수 있도록 지원합니다.
 4) RAG와 웹검색을 통해 얻어진 관련된 문서들이 실제 관련이 있는지를 prompt와 structured output으로 확인하고 관련된 문서에서 컨텐츠를 추출하여 초안(Draft)를 개선합니다. Plan 단계에서 여러개의 Draft들이 생성되었으므로 multi-region LLM을 이용하여 병렬로 속도를 향상시킵니다. 
 
@@ -60,7 +60,7 @@ def buildLongTermWriting():
     return workflow.compile()
 ```
 
-우측 Reflection 워크플로우와 같이 각 문단은 Reflection 패턴을 이용하여 문장을 향상시킵니다. 이때 Reflection에 대한 워크플로우는 아래와 같습니다.
+우측 reflection 워크플로우와 같이 각 문단은 reflection 패턴을 이용하여 문장을 향상시킵니다. 이때 reflection에 대한 워크플로우는 아래와 같습니다.
 
 ```python
 class ReflectionState(TypedDict):
@@ -96,21 +96,20 @@ def buildReflection():
 
 ## Plan and Execute
 
-LLM의 output token과 관련하여 [Anthropic의 Claude3의 경우](https://docs.anthropic.com/en/docs/about-claude/models)의 경우에 4k를 제공하고 있습니다. 일반적인 Q&A에서는 충분한 크기이지만, 장문의 글은 4k보다는 큰 출력을 요구합니다. 또한, 사람은 긴글을 작성하기 먼저 목차를 정하고 상세한 내용을 채워가는 방식을 일반적으로 사용합니다. 이러한 목적을 위해서는 여기에서는 Plan and execute 패턴을 사용하여 먼저 목차를 정하고 각 세부내용을 작성하고자 합니다. 이러한 패턴은 여러번의 LLM 출력을 이용할 수 있으므로 출력 토큰수의 제한에 영향을 받지 않습니다.
+LLM의 output token과 관련하여 [Anthropic의 Claude3의 경우](https://docs.anthropic.com/en/docs/about-claude/models)의 경우에 4k를 제공하고 있습니다. 일반적인 질문과 답변(Q&A) 형태에서는 충분한 크기이지만, 장문의 글은 4k보다는 큰 출력을 요구합니다. 또한, 사람들은 긴글을 작성하기위해 목차를 정하고 상세한 내용을 채워가는 방식을 사용합니다. 이러한 사람의 사고방식을 따라서, 여기에서는 plan and execute 패턴을 사용하여 먼저 목차를 정하고 각 세부 내용을 작성합니다. 이러한 패턴은 여러번의 LLM 출력을 이용할 수 있도록 해주므로, LLM 출력 토큰수의 제한을 극복할 수 있습니다.
 
-
-사용자의 instruction은 plan_node에서 n개의 plan을 생성합니다. execution_node는 instruction, plans와 현재의 step을 이용하여 draft를 생성합니다. n개의 draft들이 생성됩니다.
+사용자의 지시사항(instruction)을 이용하여 plan node는 n개의 계획(plan)을 생성합니다. Execution node는 instruction, plans과 현재 step을 이용하여 초안(draft)들을 생성합니다. 
 
 <img width="200" alt="image" src="https://github.com/user-attachments/assets/2020f67e-53bd-4d10-995d-d88c952f7f83">
 
-여기에서는 Plan and write를 위하여 [AgentWrite LangGraph](https://github.com/samwit/agent_tutorials/tree/main/agent_write)을 참조하여, 한국어에 맞게 수정하였습니다. Plan에서는 글씨기 지시사항을 아래와 같이 Main point와 Word Count를 이용하여 구성하도록 예제와 함게 요청합니다. 이렇게 함으로써 각 문단의 구분을 한줄로 처리할 수 있고 작성해야 하는 범위를 LLM에게 지시할 수 있게 됩니다.
+여기에서는 plan and write를 위하여 [AgentWrite LangGraph](https://github.com/samwit/agent_tutorials/tree/main/agent_write)을 참조하여, 한국어에 맞게 수정하였습니다. Plan에서는 글씨기 지시사항을 main point와 word count를 이용하여 아래와 같이 구성합니다. 아래와 같은 구체적인 예를 제시함으로써, 각 문단의 계획(plan)을 한줄로 정의할 수 있고 작성해야 하는 범위를 LLM에게 구체적으로 지시할 수 있습니다. 
 
 ```text
 1. Main Point: [문단의 주요 내용을 자세히 설명하십시오.], Word Count: [Word count requirement, e.g., 800 words]
 2. Main Point: [문단의 주요 내용을 자세히 설명하십시오.], Word Count: [word count requirement, e.g. 1500 words]
 ```
 
-아래는 구현된 Plan 노드를 보여줍니다. 상세한 코드는 [lambda_function.py](./lambda-chat-ws/lambda_function.py)을 참조합니다. 여기서는 LLM의 Role을 정의하고 글씨의 목표를 제시합니다. 사용자가 채팅창에 입력한 글쓰기의 주제는 instruction으로 LLM에 요청됩니다. 
+아래는 구현된 plan 노드를 보여줍니다. 상세한 코드는 [lambda_function.py](./lambda-chat-ws/lambda_function.py)을 참조합니다. 여기서는 LLM의 role을 정의하고 글쓰기의 목표를 제시합니다. 
 
 ```python
 def plan_node(state: State):
@@ -188,18 +187,7 @@ def plan_node(state: State):
 4. Main Point: Advanced RAG의 장단점과 한계점, 그리고 향후 발전 방향에 대해 논의합니다. RAG 기술의 윤리적, 사회적 영향과 도전 과제에 대해서도 다룹니다. Word Count: 1200 words
 ```
 
-Plan 노드에서 생성된 글쓰기 작성 계획을 이용하여 Execute 노드에서는 아래와 같이 각 단락을 작성합니다. 단락 작성시 처음 요청된 글쓰기 지시사항, 전체 글쓰기 단계와 이전 단계에서 작성한 텍스트를 제공한 후에 현재 Step을 주고 이어서 작성하도록 요청합니다. LLM에게 글쓰기 지시사항, 전체 글쓰기 단계, 작성된 텍스트를 제공함으로써 이전에 작성된 글의 문맥을 잊어버리지 않고 원하는 문단을 작성하도록 할 수 있습니다. 이러한 방식은 매 단락 작성시 이전 문장 전체를 입력 context에 제공해야 함으로써 사용되는 token 수의 증가와 전체 문장의 내용이 입력 context로 제한됩니다. Anthropic의 Claude3의 경우에 200k token을 제공하므로써 MS Word 기준으로 10 페이지 내외의 문서는 작성 가능하지만 이보다 큰 용도로 사용하기 위해서는 이전 글씨나 단계의 내용을 조정하거나 요약하는 방법을 이용합니다. 
-
-작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도로고 markdown 형태를 이용하였습니다. 아래 작성된 초안(draft)과 같이 markdown 형태는 문단이 "###"으로 구분됩니다. 
-
-```text
-### Advanced RAG의 응용 분야와 사례
-Advanced RAG는 다양한 분야에서 활용될 수 있으며, 특히 질의 응답, 요약, 데이터 증강 등의 분야에서 큰 잠재력을 보이고 있습니다.
-**질의 응답(Question Answering)**은 Advanced RAG의 가장 대표적인 응용 분야입니다. RAG 모델은 주어진 질문에 대해 외부 데이터베이스에서 관련 정보를 검색하고, 이를 바탕으로 정확한 답변을 생성할 수 있습니다. 예를 들어, 의학 분야에서 RAG 모델은 환자의 증상과 관련된 의학 문헌을 검색하여 진단과 치료 방법을 제안할 수 있습니다. 또한 법률 분야에서는 관련 법규와 판례를 검색하여 법적 자문을 제공할 수 있습니다.
-**요약(Summarization)** 분야에서도 RAG 모델이 활용될 수 있습니다. 긴 문서나 여러 문서에서 핵심 내용을 추출하고 간결하게 요약하는 작업에서 RAG 모델은 외부 지식원을 활용하여 더 정확하고 포괄적인 요약을 생성할 수 있습니다. 예를 들어, 뉴스 기사를 요약할 때 RAG 모델은 관련 배경 지식을 검색하여 중요한 맥락 정보를 포함시킬 수 있습니다.
-**데이터 증강(Data Augmentation)** 분야에서도 RAG 모델이 유용하게 활용될 수 있습니다. 기계 학습 모델을 학습시키기 위해서는 대량의 데이터가 필요한데, RAG 모델을 사용하면 기존 데이터에 외부 지식을 추가하여 데이터를 증강시킬 수 있습니다. 예를 들어, 자연어 처리 모델을 학습시킬 때 RAG 모델을 사용하여 기존 데이터에 관련 백과사전 정보를 추가하면 모델의 성능을 향상시킬 수 있습니다.
-이 외에도 Advanced RAG는 정보 추출, 지식 그래프 구축, 대화 시스템 등 다양한 분야에서 활용될 수 있습니다. RAG 모델은 외부 지식원을 효과적으로 활용하여 기존 언어 모델의 한계를 극복하고 더 나은 성능을 제공할 수 있습니다.
-```
+Plan 노드에서 생성된 글쓰기 작성 계획을 이용하여 execute 노드에서는 아래와 같이 각 단락을 작성합니다. 단락 작성시 처음 요청된 글쓰기 지시사항, 전체 글쓰기 단계와 이전 단계에서 작성한 텍스트를 제공한 후에 현재 step을 주고 이어서 작성하도록 요청합니다. LLM에게 글쓰기 지시사항, 전체 글쓰기 단계, 작성된 텍스트를 제공함으로써 이전에 작성된 글의 문맥을 잊어버리지 않고 원하는 문단을 작성하도록 할 수 있습니다. 이러한 방식은 매 단락 작성시 이전 문장 전체를 입력 context에 제공해야 함으로써 사용되는 token 수의 증가와 전체 문장의 내용이 입력 context로 제한됩니다. Anthropic의 Claude 3의 경우에 200k token을 제공하므로 MS Word 기준으로 10 페이지 내외의 문서는 작성 가능하지만 이보다 큰 용도로 사용하기 위해서는 이전 글씨나 단계의 내용을 조정하거나 요약하는 방법을 이용합니다. 
 
 ```python
 def execute_node(state: State):
@@ -331,9 +319,7 @@ def revise_answer(state: State):
             final_doc += output['revised_draft'] + '\n\n'
 
     subject = get_subject(state['instruction'])
-    # markdown file
     markdown_key = 'markdown/'+f"{subject}.md"
-    # print('markdown_key: ', markdown_key)
         
     markdown_body = f"## {state['instruction']}\n\n"+final_doc
                 
@@ -368,6 +354,17 @@ def revise_answer(state: State):
     return {
         "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
     }
+```
+
+작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도로고 markdown 형태를 이용하였습니다. 아래 작성된 초안(draft)과 같이 markdown 형태는 문단이 "###"으로 구분됩니다. 
+
+```text
+### Advanced RAG의 응용 분야와 사례
+Advanced RAG는 다양한 분야에서 활용될 수 있으며, 특히 질의 응답, 요약, 데이터 증강 등의 분야에서 큰 잠재력을 보이고 있습니다.
+**질의 응답(Question Answering)**은 Advanced RAG의 가장 대표적인 응용 분야입니다. RAG 모델은 주어진 질문에 대해 외부 데이터베이스에서 관련 정보를 검색하고, 이를 바탕으로 정확한 답변을 생성할 수 있습니다. 예를 들어, 의학 분야에서 RAG 모델은 환자의 증상과 관련된 의학 문헌을 검색하여 진단과 치료 방법을 제안할 수 있습니다. 또한 법률 분야에서는 관련 법규와 판례를 검색하여 법적 자문을 제공할 수 있습니다.
+**요약(Summarization)** 분야에서도 RAG 모델이 활용될 수 있습니다. 긴 문서나 여러 문서에서 핵심 내용을 추출하고 간결하게 요약하는 작업에서 RAG 모델은 외부 지식원을 활용하여 더 정확하고 포괄적인 요약을 생성할 수 있습니다. 예를 들어, 뉴스 기사를 요약할 때 RAG 모델은 관련 배경 지식을 검색하여 중요한 맥락 정보를 포함시킬 수 있습니다.
+**데이터 증강(Data Augmentation)** 분야에서도 RAG 모델이 유용하게 활용될 수 있습니다. 기계 학습 모델을 학습시키기 위해서는 대량의 데이터가 필요한데, RAG 모델을 사용하면 기존 데이터에 외부 지식을 추가하여 데이터를 증강시킬 수 있습니다. 예를 들어, 자연어 처리 모델을 학습시킬 때 RAG 모델을 사용하여 기존 데이터에 관련 백과사전 정보를 추가하면 모델의 성능을 향상시킬 수 있습니다.
+이 외에도 Advanced RAG는 정보 추출, 지식 그래프 구축, 대화 시스템 등 다양한 분야에서 활용될 수 있습니다. RAG 모델은 외부 지식원을 효과적으로 활용하여 기존 언어 모델의 한계를 극복하고 더 나은 성능을 제공할 수 있습니다.
 ```
 
 Reflection 과정은 문장의 개선점을 찾고 부족한 부분은 검색하고 이를 적용하는 작업을 반복함으로써 전체 문단들을 순차적으로 진행하기 보다는 reflect_drafts_using_parallel_processing()와 같이 병렬 처리하는 것이 합리적입니다. 각 문단은 reflect_draft()을 통해 수정 작업을 수행합니다. 문단을 병렬 처리할 경우에 각 문단의 개선 작업 시간은 각 문단의 길이와 검색하는 컨텐츠의 양에 따라 달라집니다. 따라서, 아래와 같이 문단에 대한 개선작업 요청에 문서의 인덱스를 포함하고, 결과를 json 형태로 받아서 각 index에 따라 수정된 문단(revised_draft)을 배치합니다. 
@@ -437,14 +434,14 @@ def markdown_to_html(body):
 
 ## Revise를 통해 글쓰기 개선
 
-일반적인 사람들의 글쓰기 처럼, 초안 작성후 지속적인 수정을 통해 글의 품질을 향상시킬 수 있습니다. 이러한 글쓰기에서 사람들은 다른 도서나, 인터넷등을 찾아서 참조함으로써 글의 완성도를 높일 수 있습니다. 
+일반적인 사람들의 글쓰기처럼, 초안 작성후 지속적인 수정을 통해 글의 품질을 향상시킬 수 있습니다. 이러한 글쓰기에서 사람들은 다른 도서나, 인터넷등을 찾아서 참조함으로써 글의 완성도를 높일 수 있습니다. 
 
-revise_node에서는 drafts를 각각 reflect_node에서 reflections을 추출합니다. 또한 이때 최대 3개의 search_queries도 함께 추출하여 검색을 통해 contents를 수집합니다. reflection과 search_queries에 대한 contents를 이용하여 revise_answer에서는 질문을 업데이트합니다. 
+Revise node에서는 drafts를 각각 reflect node에서 reflections을 추출합니다. 또한 이때 최대 3개의 search_queries도 함께 추출하여 검색을 통해 contents를 수집합니다. reflection과 search_queries에 대한 contents를 이용하여 revise_answer에서는 질문을 업데이트합니다. 
 
 ![image](https://github.com/user-attachments/assets/be4efa7d-8e93-419e-a46c-2c0eb9f41400)
 
 
-초안(Draft)에 대한 reflection으로 "missing", "advisable", "superfluous"를 구하고, search_queries를 이용해 검색한 결과(content)를 이용하여 문장을 개선합니다. 이때, Reflection, Research 클래스와 [Structured Output](https://github.com/kyopark2014/langgraph-agent/blob/main/structured-output.md)을 이용합니다. 이 방식은 [Reflexion](https://github.com/kyopark2014/langgraph-agent/blob/main/reflexion-agent.md)의 AnswerQuestion/Reflectin을 참조하였습니다. 검색시의 충분한 정보를 획득하기 위하여 검색어가 영/한 번역을 통해 검색을 수행합니다. 
+초안(Draft)에 대한 reflection으로 "missing", "advisable", "superfluous"를 구하고, search_queries를 이용해 검색한 결과(content)를 이용하여 문장을 개선합니다. 이때, reflection, research 클래스와 [Structured Output](https://github.com/kyopark2014/langgraph-agent/blob/main/structured-output.md)을 이용합니다. 이 방식은 [Reflexion](https://github.com/kyopark2014/langgraph-agent/blob/main/reflexion-agent.md)의 AnswerQuestion/Reflectin을 참조하였습니다. 검색시의 충분한 정보를 획득하기 위하여 검색어가 영/한 번역을 통해 검색을 수행합니다. 
 
 ```python
 class Reflection(BaseModel):
@@ -463,7 +460,6 @@ class Research(BaseModel):
 def reflect_node(state: ReflectionState):
     print("###### reflect ######")
     draft = state['draft']
-    print('draft: ', draft)
     
     reflection = []
     search_queries = []
@@ -489,8 +485,6 @@ def reflect_node(state: ReflectionState):
                         
                 print('translated_search: ', translated_search)
                 search_queries += translated_search
-
-            print('search_queries (mixed): ', search_queries)
             break
         
     revision_number = state["revision_number"] if state.get("revision_number") is not None else 1
@@ -501,7 +495,7 @@ def reflect_node(state: ReflectionState):
     }
 ```
 
-Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG와 웹검색(tavily)를 사용합니다. 
+Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG와 웹 검색(tavily)를 사용합니다. 
 
 ```python
 def revise_draft(state: ReflectionState):   
@@ -565,7 +559,6 @@ def revise_draft(state: ReflectionState):
     search = TavilySearchResults(max_results=2)
     for q in search_queries:
         response = search.invoke(q)
-        print(f'q: {q}, WEB: {response}')
                 
         docs = []
         for r in response:
@@ -580,8 +573,6 @@ def revise_draft(state: ReflectionState):
                         },
                     )
                 )                
-        print('docs from web search: ', docs)
-        
         if len(docs):
             filtered_docs += grade_documents(q, docs)
         
@@ -611,7 +602,7 @@ def revise_draft(state: ReflectionState):
     }
 ```
 
-얻어진 결과가 실제 관련이 있는지를 확인하기 grade_documents로 관련된 문서만을 추출합니다. 
+얻어진 결과가 실제 관련이 있는지를 확인하기 grade_documents()로 관련된 문서만을 추출합니다. 
 
 ```python
 def grade_documents(question, documents):
@@ -622,7 +613,7 @@ def grade_documents(question, documents):
     return filtered_docs
 ```
 
-여기서 문서의 관련도 평가에도 병렬처리를 수행하면 속도를 개선합니다. 각각의 관련도 평가는 GradeDocuments 클래스와 structured output을 아래와 같이 이용합니다.
+여기서 문서의 관련도 평가에도 병렬처리를 수행하면 속도를 개선합니다. 각각의 관련도 평가는 gradeDocuments 클래스와 structured output을 아래와 같이 이용합니다.
 
 ```python
 def grade_documents_using_parallel_processing(question, documents):
@@ -693,7 +684,7 @@ def grade_document_based_on_relevance(conn, question, doc, models, selected):
     conn.close()
 ```
 
-문단에 대한 평가 및 개선은 MAX_REVISIONS+1 만큰 수행합니다. 아래와 같이 should_continue은 conditional edge로서 반복 숫자에 대한 조건문을 포함하고 있습니다. 
+문단에 대한 평가 및 개선은 MAX_REVISIONS 만큰 수행합니다. 아래와 같이 should_continue()은 conditional edge로서 반복 숫자에 대한 조건문을 포함하고 있습니다. 
 
 ```python
 MAX_REVISIONS = 1
