@@ -488,7 +488,7 @@ export class CdkWritingAgentStack extends cdk.Stack {
       }
     });     
     lambdaChatWebsocket.grantInvoke(new iam.ServicePrincipal('apigateway.amazonaws.com'));  
-    s3Bucket.grantRead(lambdaChatWebsocket); // permission for s3
+    s3Bucket.grantReadWrite(lambdaChatWebsocket); // permission for s3
     callLogDataTable.grantReadWriteData(lambdaChatWebsocket); // permission for dynamo 
     
     new cdk.CfnOutput(this, 'function-chat-ws-arn', {
