@@ -672,6 +672,19 @@ def grade_document_based_on_relevance(conn, question, doc, models, selected):
     conn.close()
 ```
 
+문단에 대한 평가 및 개선은 MAX_REVISIONS+1 만큰 수행합니다. 아래와 같이 should_continue은 conditional edge로서 반복 숫자에 대한 조건문을 포함하고 있습니다. 
+
+```python
+MAX_REVISIONS = 1
+def should_continue(state: ReflectionState, config):
+    print("###### should_continue ######")
+    max_revisions = config.get("configurable", {}).get("max_revisions", MAX_REVISIONS)
+    print("max_revisions: ", max_revisions)
+            
+    if state["revision_number"] > max_revisions:
+        return "end"
+    return "continue"
+```
 
 ## 실행결과
 
