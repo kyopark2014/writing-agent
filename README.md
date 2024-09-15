@@ -8,6 +8,55 @@
 
 <img width="706" alt="image" src="https://github.com/user-attachments/assets/6fe65b1b-a591-4eae-af28-4b5d028774c5">
 
+여기서 좌측의 Plan and Execute 워크플로우는 아래와 같이 정의합니다.
+
+```python
+def buildLongTermWriting():
+    workflow = StateGraph(State)
+
+    # Add nodes
+    workflow.add_node("planning_node", plan_node)
+    workflow.add_node("execute_node", execute_node)
+    workflow.add_node("revising_node", revise_answer)
+
+    # Set entry point
+    workflow.set_entry_point("planning_node")
+
+    # Add edges
+    workflow.add_edge("planning_node", "execute_node")
+    workflow.add_edge("execute_node", "revising_node")
+    workflow.add_edge("revising_node", END)
+        
+    return workflow.compile()
+```
+
+우측 Reflection 워크플로우와 같이 각 문단은 Reflection 패턴을 이용하여 문장을 향상시킵니다. 이때 Reflection에 대한 워크플로우는 아래와 같습니다.
+
+```python
+def buildReflection():
+    workflow = StateGraph(ReflectionState)
+
+    # Add nodes
+    workflow.add_node("reflect_node", reflect_node)
+    workflow.add_node("revise_draft", revise_draft)
+
+    # Set entry point
+    workflow.set_entry_point("reflect_node")
+        
+    workflow.add_conditional_edges(
+        "revise_draft", 
+        should_continue, 
+        {
+            "end": END, 
+            "continue": "reflect_node"}
+    )
+
+    # Add edges
+    workflow.add_edge("reflect_node", "revise_draft")
+        
+    return workflow.compile()
+```
+
 ## Plan and Execute
 
 LLM의 output token과 관련하여 [Anthropic의 Claude3의 경우](https://docs.anthropic.com/en/docs/about-claude/models)의 경우에 4k를 제공하고 있습니다. 일반적인 Q&A에서는 충분한 크기이지만, 장문의 글은 4k보다는 큰 출력을 요구합니다. 또한, 사람은 긴글을 작성하기 먼저 목차를 정하고 상세한 내용을 채워가는 방식을 일반적으로 사용합니다. 이러한 목적을 위해서는 여기에서는 Plan and execute 패턴을 사용하여 먼저 목차를 정하고 각 세부내용을 작성하고자 합니다. 이러한 패턴은 여러번의 LLM 출력을 이용할 수 있으므로 출력 토큰수의 제한에 영향을 받지 않습니다.
