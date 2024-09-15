@@ -1741,23 +1741,19 @@ def getResponse(connectionId, jsonBody):
 
                 elif convType == 'long-form-writing-agent':  # long writing
                     msg = run_long_form_writing_agent(connectionId, requestId, text)
-                    
-                elif convType == "rag-knowledge-base":
-                    msg, reference = get_answer_using_knowledge_base(chat, text, connectionId, requestId)                
-                elif convType == "rag-knowledge-base":
+
+                elif convType == 'long-form-writing-agent-with-chat':  # long writing (chat)
                     revised_question = revise_question(connectionId, requestId, chat, text)     
                     print('revised_question: ', revised_question)      
-                    msg, reference = get_answer_using_knowledge_base(chat, revised_question, connectionId, requestId)
-                                
+
+                    msg = run_long_form_writing_agent(connectionId, requestId, revised_question)
+                    
                 elif convType == "translation":
                     msg = translate_text(chat, text) 
                 
                 elif convType == "grammar":
                     msg = check_grammer(chat, text)  
-                
-                else:
-                    msg = general_conversation(connectionId, requestId, chat, text)  
-                    
+                                    
                 memory_chain.chat_memory.add_user_message(text)
                 memory_chain.chat_memory.add_ai_message(msg)
                 
