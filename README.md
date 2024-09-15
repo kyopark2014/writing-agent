@@ -5,7 +5,7 @@
     <img alt="License" src="https://img.shields.io/badge/LICENSE-MIT-green">
 </p>
 
-아래와 같은 용도로 LLM Agent를 사용하는 사람들을 위해 만들었습니다.
+다음의 내용은 아래와 같은 용도로 LLM Agent를 사용하는 사람들을 위해 만들었습니다.
 
 1) LLM이 한번에 사용하는 토큰 따위는 관심이 없고 그냥 결과만 좋았으면 좋겠다는 사람
 2) LLM이 알아서 인터넷 또는 RAG을 검색해서, 충분한 길이를 가지는 글을 작성해주면, blog나 github에 수정없이 바로 올리고 싶은 사람
