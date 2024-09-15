@@ -307,7 +307,6 @@ def revise_answer(state: State):
         ContentType='text/markdown',
         Body=markdown_body.encode('utf-8')
     )
-    # print('response: ', response)
         
     markdown_url = f"{path}{markdown_key}"
     print('markdown_url: ', markdown_url)
@@ -407,6 +406,8 @@ revise_node에서는 drafts를 각각 reflect_node에서 reflections을 추출�
 
 ![image](https://github.com/user-attachments/assets/be4efa7d-8e93-419e-a46c-2c0eb9f41400)
 
+
+Reflection과 search_queries를 구하기 위한 Research 클래스를 정의합니다. 이 방식은 [Reflexion](https://github.com/langchain-ai/langgraph/blob/main/docs/docs/tutorials/reflexion/reflexion.ipynb)의 AnswerQuestion/Reflectin을 참조하여 구현하였습니다.
 
 ## 실행결과
 
