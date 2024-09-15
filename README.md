@@ -718,6 +718,11 @@ def should_continue(state: ReflectionState, config):
 
 ## 실행결과
 
+설치가 끝나면 WebClient에 접속합니다. 아래와 같이 User Id에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다. 이후 아래와 같이 "Long term writing"을 선택합니다. 
+
+![image](https://github.com/user-attachments/assets/2be97e7c-d1e8-4090-9bee-4fdc10827b9d)
+
+
 "VPC와 VPC를 안전하게 연결하고 연결후 동작을 확인하는 방법"이라고 입력하면 아래와 같은 결과를 얻을 수 있습니다.
 
 ![image](https://github.com/user-attachments/assets/4ac97942-4db8-4cb5-bd06-d0a4a6a4633e)
