@@ -732,11 +732,11 @@ def should_continue(state: ReflectionState, config):
 
 ### 결과 예제
 
+- [지방 조직이 분비하는 exosome들이 어떻게 면역체계에 역할을 하고 어떻게 하면 좋은 exosome들을 분비시켜 당뇨나 병을 예방할수 있는지 알려주세요.](./contents/Exosomes_from_fat_tissue_regulate_immunity.md)
+
 - [adipocyte cells (3T3L1)과 macrophages co-culutre 실험을 어떻게 design할수 있을까 ?](./contents/Co-culturing_adipocytes_and_macrophages.md)
 
 - [Python으로 생성한 텍스트 파일을 열었을때 한글이 깨지는 경우에 대한 대응방법](./contents/Text_file_encoding_issue_in_Python.md)
-
-- [지방 조직이 분비하는 exosome들이 어떻게 면역체계에 역할을 하고 어떻게 하면 좋은 exosome들을 분비시켜 당뇨나 병을 예방할수 있는지 알려주세요.](./contents/Exosomes_from_fat_tissue_regulate_immunity.md)
 
 - [AWS의 생성형 AI 서비스에서 데이터를 수집하는 방법](./contents/AWS_AI_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%88%98%EC%A7%91_%EB%B0%A9%EB%B2%95.md)
 
