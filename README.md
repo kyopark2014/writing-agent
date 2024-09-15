@@ -347,7 +347,7 @@ def revise_answer(state: State):
     }
 ```
 
-Reflection 과정은 문장의 개선점을 찾고 부족한 부분은 검색하고 이를 적용하는 작업을 반복함으로써 전체 문단들을 순차적으로 진행하기 보다는 reflect_drafts_using_parallel_processing()와 같이 병렬처리하는것이 합리적입니다. 각 문단은 reflect_draft()을 통해 수정 작업을 수행합니다. 문단을 병렬 처리할 경우에 각 문단의 개선 작업 시간은 각 문단의 길이와 검색하는 컨텐츠의 양에 따라 달라집니다. 따라서, 아래와 같이 문단에 대한 개선작업 요청에 문서의 인덱스를 포함하고, 결과를 json 형태로 받아서 각 index에 따라 수정된 문단(revised_draft)을 배치합니다. 
+Reflection 과정은 문장의 개선점을 찾고 부족한 부분은 검색하고 이를 적용하는 작업을 반복함으로써 전체 문단들을 순차적으로 진행하기 보다는 reflect_drafts_using_parallel_processing()와 같이 병렬 처리하는 것이 합리적입니다. 각 문단은 reflect_draft()을 통해 수정 작업을 수행합니다. 문단을 병렬 처리할 경우에 각 문단의 개선 작업 시간은 각 문단의 길이와 검색하는 컨텐츠의 양에 따라 달라집니다. 따라서, 아래와 같이 문단에 대한 개선작업 요청에 문서의 인덱스를 포함하고, 결과를 json 형태로 받아서 각 index에 따라 수정된 문단(revised_draft)을 배치합니다. 
 
 ```python
 def reflect_drafts_using_parallel_processing(drafts):
