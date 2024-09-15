@@ -702,9 +702,14 @@ def should_continue(state: ReflectionState, config):
 
 ## 실행결과
 
-300초 소요.
+"VPC와 VPC를 안전하게 연결하고 연결후 동작을 확인하는 방법"이라고 입력하면 아래와 같은 결과를 얻을 수 있습니다.
 
-![image](https://github.com/user-attachments/assets/59f105f1-4777-471f-8416-5826c703f254)
+![image](https://github.com/user-attachments/assets/4ac97942-4db8-4cb5-bd06-d0a4a6a4633e)
+
+하단의 
+
+![image](https://github.com/user-attachments/assets/14fbb094-21ba-4d92-931f-423d5f6f4872)
+
 
 "AWS의 Cloud를 이용해 ERP를 구축하는 방법에 대해 정리해줘."라고 입력합니다.
 
