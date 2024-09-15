@@ -19,7 +19,7 @@ LangGraph로 Long term writing을 구현하기 위하여 아래와 같은 server
 
 1) 사용자의 질문과 답변의 양방향 대화를 원할히 수행할 수 있도록 클라이언트와 애틀리케이션 서버간 연결에 WebSocket을 이용합니다. 이때 WebSocket의 Endpoint는 [WebSocket을 지원하는 API Gateway](https://docs.aws.amazon.com/ko_kr/apigateway/latest/developerguide/apigateway-websocket-api-overview.html)를 이용합니다. 이때 사용자의 입력은 json형태로 message-id와 converstion-type과 같은 정보를 포함합니다. 
 2) AWS Lambda는 사용자의 입력을 받으면 LangGraph의 Workflow를 이용하여 순차적으로 명령을 수행합니다. 여기서 사용자의 입력은 글쓰기를 위한 지시사항으로써, LangGraph의 [plan-and-execute 패턴](https://langchain-ai.github.io/langgraph/tutorials/plan-and-execute/plan-and-execute/#create-the-graph)에 따라 먼저 단계별로 글쓰는 주제를 선정합니다. 선정된 주제에 따라 초안(Draft)를 생성합니다.
-3) [초안에 대한 reflection](https://blog.langchain.dev/reflection-agents/)을 통해 초안을 개선하기 위한 포인트를 찾고 검색을 통해 내용을 보강합니다. 여기서는 Amazon Bedrock의 완전관리형 RAG 서비스인 Knowledge base를 이용하여 RAG를 검색하고 Tavily를 통해 검색한 컨텐츠를 사용합니다. Knowledge base는 Amazon S3에 업로드된 DOC, PDF, PPT뿐 아니라 웹크롤러 데이터 소스를 이용하여 인터넷의 다양한 데이터를 RAG로 사용할 수 있도록 지원합니다.
+3) [초안에 대한 reflection](https://blog.langchain.dev/reflection-agents/)을 통해 초안을 개선하기 위한 포인트를 찾고 검색을 통해 내용을 보강합니다. 여기서는 [Amazon Bedrock의 완전관리형 RAG 서비스인 Knowledge base](https://aws.amazon.com/ko/blogs/korea/knowledge-bases-now-delivers-fully-managed-rag-experience-in-amazon-bedrock/)를 이용하여 RAG를 검색하고 Tavily를 통해 검색한 컨텐츠를 사용합니다. Knowledge base는 Amazon S3에 업로드된 DOC, PDF, PPT뿐 아니라 웹크롤러 데이터 소스를 이용하여 인터넷의 다양한 데이터를 RAG로 사용할 수 있도록 지원합니다.
 4) RAG와 웹검색을 통해 얻어진 관련된 문서들이 실제 관련이 있는지를 prompt와 structured output으로 확인하고 관련된 문서에서 컨텐츠를 추출하여 초안(Draft)를 개선합니다. Plan 단계에서 여러개의 Draft들이 생성되었으므로 multi-region LLM을 이용하여 병렬로 속도를 향상시킵니다. 
 
 ![image](https://github.com/user-attachments/assets/f2fa332d-0e44-4f92-90e3-0d5d4b5babe5)
