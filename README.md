@@ -706,7 +706,7 @@ def should_continue(state: ReflectionState, config):
 
 ![image](https://github.com/user-attachments/assets/4ac97942-4db8-4cb5-bd06-d0a4a6a4633e)
 
-하단의 
+하단의 [미리보기 링크]을 선택하면 [markdown 파일](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8.md)의 내용을 아래와 같이 확인할 수 있습니다.
 
 ![image](https://github.com/user-attachments/assets/14fbb094-21ba-4d92-931f-423d5f6f4872)
 
