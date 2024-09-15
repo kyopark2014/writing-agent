@@ -421,7 +421,7 @@ revise_node에서는 drafts를 각각 reflect_node에서 reflections을 추출�
 ![image](https://github.com/user-attachments/assets/be4efa7d-8e93-419e-a46c-2c0eb9f41400)
 
 
-Reflection과 search_queries를 구하기 위한 Research 클래스와 [Structured Output](https://github.com/kyopark2014/langgraph-agent/blob/main/structured-output.md)를 이용합니다. 이 방식은 [Reflexion](https://github.com/kyopark2014/langgraph-agent/blob/main/reflexion-agent.md)의 AnswerQuestion/Reflectin을 참조하여 구현하였습니다.
+초안(Draft)에 대한 reflection으로 "missing", "advisable", "superfluous"를 구하고, search_queries를 이용해 검색한 결과(content)를 이용하여 문장을 개선합니다. 이때, Reflection, Research 클래스와 [Structured Output](https://github.com/kyopark2014/langgraph-agent/blob/main/structured-output.md)을 이용합니다. 이 방식은 [Reflexion](https://github.com/kyopark2014/langgraph-agent/blob/main/reflexion-agent.md)의 AnswerQuestion/Reflectin을 참조하였습니다. 검색시의 충분한 정보를 획득하기 위하여 검색어가 영/한 번역을 통해 검색을 수행합니다. 
 
 ```python
 class Reflection(BaseModel):
@@ -448,17 +448,12 @@ def reflect_node(state: ReflectionState):
         chat = get_chat()
         structured_llm = chat.with_structured_output(Research, include_raw=True)
             
-        info = structured_llm.invoke(draft)
-        print(f'attempt: {attempt}, info: {info}')
-                
+        info = structured_llm.invoke(draft)                
         if not info['parsed'] == None:
             parsed_info = info['parsed']
             reflection = [parsed_info.reflection.missing, parsed_info.reflection.advisable]
             search_queries = parsed_info.search_queries
                 
-            print('reflection: ', parsed_info.reflection)            
-            print('search_queries: ', search_queries)     
-        
             if isKorean(draft):
                 translated_search = []
                 for q in search_queries:
@@ -481,6 +476,191 @@ def reflect_node(state: ReflectionState):
         "search_queries": search_queries,
         "revision_number": revision_number + 1
     }
+```
+
+Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG + 웹검색 또는 웹검색(tavily)를 사용합니다. 
+
+```python
+def revise_draft(state: ReflectionState):   
+    print("###### revise_answer ######")        
+    draft = state['draft']
+    search_queries = state['search_queries']
+    reflection = state['reflection']
+        
+    if isKorean(draft):
+        revise_template = (
+            "당신은 장문 작성에 능숙한 유능한 글쓰기 도우미입니다."                
+            "draft을 critique과 information 사용하여 수정하십시오."
+            "최종 결과는 한국어로 작성하고 <result> tag를 붙여주세요."
+                            
+            "<draft>"
+            "{draft}"
+            "</draft>"
+                            
+            "<critique>"
+            "{reflection}"
+            "</critique>"
+
+            "<information>"
+            "{content}"
+            "</information>"
+        )
+    else:    
+        revise_template = (
+            "You are an excellent writing assistant." 
+            "Revise this draft using the critique and additional information."
+            # "Provide the final answer using Korean with <result> tag."
+            "Provide the final answer with <result> tag."
+                            
+            "<draft>"
+            "{draft}"
+            "</draft>"
+                        
+            "<critique>"
+            "{reflection}"
+            "</critique>"
+
+            "<information>"
+            "{content}"
+            "</information>"
+        )
+                    
+    revise_prompt = ChatPromptTemplate([
+        ('human', revise_template)
+    ])
+            
+    content = []             
+    global useEnhancedSearch
+    useEnhancedSearch = False   
+        
+    if useEnhancedSearch:
+        for q in search_queries:
+            response = enhanced_search(q)     
+            content.append(response)                   
+    else:
+        search = TavilySearchResults(max_results=2)
+            
+        related_docs = []                        
+        for q in search_queries:
+            response = search.invoke(q)                
+            docs = filtered_docs = []
+            for r in response:
+                if 'content' in r:
+                    docs.append(
+                        Document(
+                            page_content=r['content']
+                        )
+                    )                
+            if len(docs):
+                filtered_docs = grade_documents(q, docs)                
+                if len(filtered_docs):
+                    related_docs += filtered_docs
+            
+        for d in related_docs:
+            content.append(d.page_content)
+        
+    chat = get_chat()
+    reflect = revise_prompt | chat
+           
+    res = reflect.invoke(
+        {
+            "draft": draft,
+            "reflection": reflection,
+            "content": content
+        }
+    )
+    output = res.content
+        
+    revised_draft = output[output.find('<result>')+8:len(output)-9]
+            
+    revision_number = state["revision_number"] if state.get("revision_number") is not None else 1
+        
+    return {
+        "revised_draft": revised_draft,            
+        "revision_number": revision_number
+    }
+```
+
+얻어진 결과가 실제 관련이 있는지를 확인하기 grade_documents로 관련된 문서만을 추출합니다. 
+
+```python
+def grade_documents(question, documents):
+    print("###### grade_documents ######")
+    
+    filtered_docs = grade_documents_using_parallel_processing(question, documents)
+    
+    return filtered_docs
+```
+
+여기서 속도의 향상을 위해 문서에 대한 평가에도 병렬처리를 수행합니다. 문서의 관련도 평가는 GradeDocuments 클래스와 structured output을 아래와 같이 이용합니다.
+
+```python
+def grade_documents_using_parallel_processing(question, documents):
+    global selected_chat
+    
+    filtered_docs = []    
+
+    processes = []
+    parent_connections = []
+    
+    for i, doc in enumerate(documents):
+        parent_conn, child_conn = Pipe()
+        parent_connections.append(parent_conn)
+            
+        process = Process(target=grade_document_based_on_relevance, args=(child_conn, question, doc, multi_region_models, selected_chat))
+        processes.append(process)
+
+        selected_chat = selected_chat + 1
+        if selected_chat == len(multi_region_models):
+            selected_chat = 0
+    for process in processes:
+        process.start()
+            
+    for parent_conn in parent_connections:
+        relevant_doc = parent_conn.recv()
+
+        if relevant_doc is not None:
+            filtered_docs.append(relevant_doc)
+
+    for process in processes:
+        process.join()    
+    return filtered_docs
+
+class GradeDocuments(BaseModel):
+    """Binary score for relevance check on retrieved documents."""
+
+    binary_score: str = Field(description="Documents are relevant to the question, 'yes' or 'no'")
+
+def get_retrieval_grader(chat):
+    system = """You are a grader assessing relevance of a retrieved document to a user question. \n 
+    If the document contains keyword(s) or semantic meaning related to the question, grade it as relevant. \n
+    Give a binary score 'yes' or 'no' score to indicate whether the document is relevant to the question."""
+
+    grade_prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system),
+            ("human", "Retrieved document: \n\n {document} \n\n User question: {question}"),
+        ]
+    )
+    
+    structured_llm_grader = chat.with_structured_output(GradeDocuments)
+    retrieval_grader = grade_prompt | structured_llm_grader
+    return retrieval_grader
+
+def grade_document_based_on_relevance(conn, question, doc, models, selected):     
+    chat = get_multi_region_chat(models, selected)
+    retrieval_grader = get_retrieval_grader(chat)
+    score = retrieval_grader.invoke({"question": question, "document": doc.page_content})
+    
+    grade = score.binary_score    
+    if grade == 'yes':
+        print("---GRADE: DOCUMENT RELEVANT---")
+        conn.send(doc)
+    else:  # no
+        print("---GRADE: DOCUMENT NOT RELEVANT---")
+        conn.send(None)
+    
+    conn.close()
 ```
 
 
