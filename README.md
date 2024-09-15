@@ -1,6 +1,6 @@
 # Writing Agent 구현하기
 
-여기에서는 LLM을 이용하여 MS Word 기준으로 약 10페이지 정도의 글쓰기를 가능하게 하는 Agent를 구현하는 방법에 대해 설명합니다.
+여기에서는 LLM을 이용하여 MS Word 기준으로 약 10페이지 정도의 글쓰기를 가능하게 하는 Agent를 구현하는 방법에 대해 설명합니다. 작성된 글은 markdown 형식으로 저장되면 html로 공유 됩니다.
 
 ## Long Term Writing
 
