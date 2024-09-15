@@ -716,8 +716,6 @@ def should_continue(state: ReflectionState, config):
 [인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
 
 
-## 실행 및 결과확인 
-
 ### 실행 방법
 
 1) 설치가 끝나면 WebClient에 접속합니다. 아래와 같이 [User Id]에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다
