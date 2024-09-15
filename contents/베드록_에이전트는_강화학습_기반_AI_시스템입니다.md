@@ -1,4 +1,4 @@
-## bedrock agent에 대해 설명해주세요. 
+## Bedrock agent에 대해 설명해주세요. 
 
 ### Bedrock 에이전트: 지능형 에이전트를 활용한 작업 자동화
 
