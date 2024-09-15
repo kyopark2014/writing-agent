@@ -126,7 +126,7 @@ HUMAN_PROMPT = "\n\nHuman:"
 AI_PROMPT = "\n\nAssistant:"
 
 map_chain = dict() 
-MSG_LENGTH = 100
+
 # Multi-LLM
 def get_chat():
     global selected_chat
@@ -373,10 +373,7 @@ def load_chatHistory(userId, allowTime, chat_memory):
 
         if type == 'text' and text and msg:
             memory_chain.chat_memory.add_user_message(text)
-            if len(msg) > MSG_LENGTH:
-                memory_chain.chat_memory.add_ai_message(msg[:MSG_LENGTH])                          
-            else:
-                memory_chain.chat_memory.add_ai_message(msg) 
+            memory_chain.chat_memory.add_ai_message(msg) 
                 
 def getAllowTime():
     d = datetime.datetime.now() - datetime.timedelta(days = 2)
@@ -1511,10 +1508,7 @@ def load_chat_history(userId, allowTime):
 
         if type == 'text':
             memory_chain.chat_memory.add_user_message(text)
-            if len(msg) > MSG_LENGTH:
-                memory_chain.chat_memory.add_ai_message(msg[:MSG_LENGTH])                          
-            else:
-                memory_chain.chat_memory.add_ai_message(msg)     
+            memory_chain.chat_memory.add_ai_message(msg)     
 
 def translate_text(chat, text):
     system = (
