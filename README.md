@@ -498,9 +498,6 @@ def revise_draft(state: ReflectionState):
     draft = state['draft']
     search_queries = state['search_queries']
     reflection = state['reflection']
-    print('draft: ', draft)
-    print('search_queries: ', search_queries)
-    print('reflection: ', reflection)
         
     if isKorean(draft):
         revise_template = (
@@ -524,7 +521,6 @@ def revise_draft(state: ReflectionState):
         revise_template = (
             "You are an excellent writing assistant." 
             "Revise this draft using the critique and additional information."
-            # "Provide the final answer using Korean with <result> tag."
             "Provide the final answer with <result> tag."
                             
             "<draft>"
@@ -543,51 +539,43 @@ def revise_draft(state: ReflectionState):
     revise_prompt = ChatPromptTemplate([
         ('human', revise_template)
     ])
-            
-    content = []               
-    related_docs = []     
-    
+                              
+    filtered_docs = []    
     # RAG - knowledge base        
     for q in search_queries:
         docs = retrieve_from_knowledge_base(q)
         print(f'q: {q}, RAG: {docs}')
         
         if len(docs):
-            related_docs += docs
+            filtered_docs += grade_documents(q, docs)
     
     # web search
     search = TavilySearchResults(max_results=2)
     for q in search_queries:
         response = search.invoke(q)
-        print(f'q: {q}, response: {response}')
+        print(f'q: {q}, WEB: {response}')
                 
         docs = []
         for r in response:
-            if 'content' in r:
-                content = r.get("content")
-                url = r.get("url")
-                        
+            if 'content' in r:                        
                 docs.append(
                     Document(
-                        page_content=content,
+                        page_content=r.get("content"),
                         metadata={
                             'name': 'WWW',
-                            'uri': url,
+                            'uri': r.get("url"),
                             'from': 'tavily'
                         },
                     )
                 )                
-        related_docs += docs
-    
-    filtered_docs = []
-    if len(related_docs):
-        filtered_docs = grade_documents(q, docs)
-        print('filtered_docs: ', filtered_docs)
-                
-        if len(filtered_docs):
-            related_docs += filtered_docs
-            
-        for d in related_docs:
+        print('docs from web search: ', docs)
+        
+        if len(docs):
+            filtered_docs += grade_documents(q, docs)
+        
+    content = []   
+    if len(filtered_docs):
+        for d in filtered_docs:
             content.append(d.page_content)
         
     chat = get_chat()
@@ -603,11 +591,10 @@ def revise_draft(state: ReflectionState):
     output = res.content
         
     revised_draft = output[output.find('<result>')+8:len(output)-9]
-
     revision_number = state["revision_number"] if state.get("revision_number") is not None else 1
         
     return {
-        "revised_draft": revised_draft,            
+        "revised_draft": revised_draft,
         "revision_number": revision_number
     }
 ```
