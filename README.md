@@ -13,6 +13,11 @@
 
 여기서 구현하는 LLM Agent는 MS Word 기준으로 약 10페이지 정도의 글쓰기가 가능합니다. 인터넷과 RAG를 통해 얻어진 결과를 활용하고 markdown 형태로 작성되어 blog나 github에 바로 올릴 수 있으며, html url 형태로 작성된 문서를 공유할 수 있습니다.
 
+## 구현된 Architecture
+
+![image](https://github.com/user-attachments/assets/f2fa332d-0e44-4f92-90e3-0d5d4b5babe5)
+
+
 ## Long Term Writing
 
 전체적인 activity diagram은 아래와 같습니다. 여기에서는 plan and excute 패턴을 가지는 agent와 reflection을 수행하는 agent를 이용하여 instruction으로 장문의 글쓰기를 수행합니다. Multi agent 구조로 구성함으로써 복잡한 workflow를 단순하게 구현할 수 있습니다. 이러한 구조는 [essay-writer](https://github.com/kyopark2014/langgraph-agent/blob/main/essay-writer.md#easy-writer)의 multi agent와 유사한 방식으로서, 워크플로우를 2개로 분리하여, 워크플로우별로 최적화가 가능하도록 구조를 개선하였습니다. 또한 Reflection에 대한 워크플로우는 독립되어 실행가능함으로 아래와 같이 Plan and Execute에서 작성된 초안들(dfrafts)을 병렬로 처리할 수 있으므로 동작 속도를 개선할 수 있습니다.
