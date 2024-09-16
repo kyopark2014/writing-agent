@@ -60,7 +60,7 @@ function onSubmit(e) {
     localStorage.setItem('multiRegion',multiRegionInput.value);
     console.log('Save config> multiRegion:', multiRegionInput.value)
 
-    localStorage.setItem('ragInput',ragInput.value);
+    localStorage.setItem('ragMode',ragInput.value);
     console.log('Save config> ragInput:', ragInput.value)
 
     window.location.href = "chat.html";
