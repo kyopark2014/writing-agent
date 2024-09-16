@@ -27,7 +27,8 @@ from langgraph.graph import START, END, StateGraph
 from pydantic.v1 import BaseModel, Field
 from typing import Annotated, List, Tuple, TypedDict, Literal, Sequence, Union
 from langchain_aws import AmazonKnowledgeBasesRetriever
-    
+from tavily import TavilyClient  
+
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
 s3_prefix = os.environ.get('s3_prefix')
@@ -116,32 +117,37 @@ except Exception as e:
 
 if tavily_api_key:
     os.environ["TAVILY_API_KEY"] = tavily_api_key
-    
-from tavily import TavilyClient    
+      
 def tavily_search(query, max_results):
+    docs = []
+    
     try:
         tavily_client = TavilyClient(api_key=tavily_api_key)
         response = tavily_client.search(query, max_results=max_results)
 
         print(response)
         
-        for re in response['results']:
-            title = re['title']
-            url = re['url']
-            content = re['content']
-            
-            print('score: ', re['score'])
-            
-            print('title: ', title)
-            print('url: ', url)
-            print('content: ', content)
-
+        for r in response["results"]:
+            name = r.get("title")
+            if name is None:
+                name = 'WWW'
+        
+            docs.append(
+                Document(
+                    page_content=r.get("content"),
+                    metadata={
+                        'name': name,
+                        'uri': r.get("url"),
+                        'from': 'tavily'
+                    },
+                )
+            )   
     except Exception as e:
         print('Exception: ', e)
 
-tavily_search('what is LangChain', 2)
+result = tavily_search('what is LangChain', 2)
+print('search result: ', result)
 
-    
     
 # websocket
 connection_url = os.environ.get('connection_url')
