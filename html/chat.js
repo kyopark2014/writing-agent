@@ -225,7 +225,7 @@ if(rag=="" || rag==null) {
 else {
     rag_mode = rag;
 }
-console.log('multi_region: ', multi_region);
+console.log('rag_mode: ', rag_mode);
 
 for (i=0;i<maxMsgItems;i++) {
     msglist.push(document.getElementById('msgLog'+i));
