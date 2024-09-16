@@ -49,6 +49,7 @@ function onSubmit(e) {
     console.log(userInput.value);
     console.log(convtypeInput.value);
     console.log(multiRegionInput.value);
+    console.log(ragInput.value);
 
     localStorage.setItem('userId',userInput.value);
     console.log('Save Profile> userId:', userInput.value)    
@@ -58,6 +59,9 @@ function onSubmit(e) {
 
     localStorage.setItem('multiRegion',multiRegionInput.value);
     console.log('Save config> multiRegion:', multiRegionInput.value)
+
+    localStorage.setItem('ragInput',ragInput.value);
+    console.log('Save config> ragInput:', ragInput.value)
 
     window.location.href = "chat.html";
 }
