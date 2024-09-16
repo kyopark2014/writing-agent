@@ -750,6 +750,8 @@ def should_continue(state: ReflectionState, config):
 
 - [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](./contents/Cloud_security_monitoring_and_threat_detection.md)
 
+- [AWS에서 생성형 AI로 Agent를 만들때의 장점/단점과 구현방법에 대해 상세히 설명해주세요. 특히 다른 AWS 서비스와 연동하는 방법과 이점에 대해 기술해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/AWS%EC%97%90%EC%84%9C_%EC%83%9D%EC%84%B1%ED%98%95_AI_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EA%B5%AC%EC%B6%95.md)
+
 - [AWS의 생성형 AI 서비스에서 데이터를 수집하는 방법](./contents/AWS_AI_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%88%98%EC%A7%91_%EB%B0%A9%EB%B2%95.md)
 
 - [AWS에서 ERP를 Cloud로 구축하는 방법](./contents/Deploying_ERP_on_AWS_Cloud.md)
