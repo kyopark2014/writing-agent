@@ -24,8 +24,6 @@ from PIL import Image
 
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
 from langgraph.graph import START, END, StateGraph
-#from langchain_core.pydantic_v1 import BaseModel, Field
-#from pydantic import BaseModel, Field
 from pydantic.v1 import BaseModel, Field
 from typing import Annotated, List, Tuple, TypedDict, Literal, Sequence, Union
 from langchain_aws import AmazonKnowledgeBasesRetriever
