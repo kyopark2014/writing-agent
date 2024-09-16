@@ -31,7 +31,7 @@ else {
 }
 console.log('multi_region: ', multiRegionInput.value);
 
-const ragInput = document.querySelector('#rag');
+const ragInput = document.querySelector('#ragMode');
 let rag = localStorage.getItem('rag'); // set conversationType if exists 
 if(rag != '') {
     ragInput.value = rag;
