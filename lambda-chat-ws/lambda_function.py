@@ -24,7 +24,9 @@ from PIL import Image
 
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
 from langgraph.graph import START, END, StateGraph
-from langchain_core.pydantic_v1 import BaseModel, Field
+#from langchain_core.pydantic_v1 import BaseModel, Field
+#from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel, Field
 from typing import Annotated, List, Tuple, TypedDict, Literal, Sequence, Union
 from langchain_aws import AmazonKnowledgeBasesRetriever
     
@@ -118,7 +120,7 @@ if tavily_api_key:
     os.environ["TAVILY_API_KEY"] = tavily_api_key
     
 from tavily import TavilyClient    
-tavily_client = TavilyClient(api_key="tvly-YOUR_API_KEY")
+tavily_client = TavilyClient(api_key=tavily_api_key)
 response = tavily_client.search("Who is Leo Messi?")
 print(response)
     

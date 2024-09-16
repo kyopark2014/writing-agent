@@ -22,8 +22,6 @@ const projectName = `writing-agent`;
 const bucketName = `storage-for-${projectName}-${accountId}-${region}`; 
 const debugMessageMode = 'false'; // if true, debug messages will be delivered to the client.
 
-const prompt_flow_name = 'aws-bot'
-const rag_prompt_flow_name = 'rag-prompt-flow'
 const knowledge_base_name = 'aws-rag'
 
 const claude3_sonnet = [
@@ -482,8 +480,6 @@ export class CdkWritingAgentStack extends cdk.Stack {
         connection_url: connection_url,
         debugMessageMode: debugMessageMode,
         projectName: projectName,
-        prompt_flow_name: prompt_flow_name,
-        rag_prompt_flow_name: rag_prompt_flow_name,
         knowledge_base_name: knowledge_base_name
       }
     });     
