@@ -691,7 +691,7 @@ class GradeDocuments(BaseModel):
 
 
 ####################### LangGraph #######################
-# Long term Writing Agent
+# Long form Writing Agent
 #########################################################
     
 # Workflow - Reflection
@@ -818,7 +818,7 @@ def retrieve_from_knowledge_base(query):
         
         link = ""
         if "s3Location" in document.metadata["location"]:
-            link = document.metadata["location"]["s3Location"]["uri"] if document.metadata["location"]["s3Location"]["uri"] is not None else ""
+            link = document.metadata["location"]["s3Location"]["url"] if document.metadata["location"]["s3Location"]["url"] is not None else ""
             
             print('link:', link)    
             pos = link.find(f"/{doc_prefix}")
@@ -930,7 +930,7 @@ def revise_draft(state: ReflectionState):
                         page_content=r.get("content"),
                         metadata={
                             'name': 'WWW',
-                            'uri': r.get("url"),
+                            'url': r.get("url"),
                             'from': 'tavily'
                         },
                     )
@@ -1377,7 +1377,7 @@ def revise_answer(state: State):
         "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
     }
         
-def buildLongTermWriting():
+def buildLongformWriting():
     workflow = StateGraph(State)
 
     # Add nodes
@@ -1396,7 +1396,7 @@ def buildLongTermWriting():
     return workflow.compile()
 
 def run_long_form_writing_agent(connectionId, requestId, query):    
-    app = buildLongTermWriting()
+    app = buildLongformWriting()
     
     # Run the workflow
     isTyping(connectionId, requestId)        
@@ -1869,7 +1869,7 @@ def getResponse(connectionId, jsonBody):
                             metadata={
                                 'name': object,
                                 # 'page':i+1,
-                                'uri': path+doc_prefix+parse.quote(object)
+                                'url': path+doc_prefix+parse.quote(object)
                             }
                         )
                     )
