@@ -652,6 +652,19 @@ class Research(BaseModel):
     search_queries: list[str] = Field(
         description="1-3 search queries for researching improvements to address the critique of your current writing."
     )
+
+class ReflectionKor(BaseModel):
+    missing: str = Field(description="부족한 내용")
+    advisable: str = Field(description="추가하여야 할 내용")
+    superfluous: str = Field(description="불필요한 내용")
+
+class ResearchKor(BaseModel):
+    """글쓰기를 개선하기 위한 검색 쿼리를 제공합니다."""
+
+    reflection: ReflectionKor = Field(description="작성된 글에서 수정할 부분")
+    search_queries: list[str] = Field(
+        description="현재 글의 문제점을 개선하기 위해 필요한 3개 이내의 검색어"
+    )
     
 def reflect_node(state: ReflectionState):
     print("###### reflect ######")
@@ -662,7 +675,11 @@ def reflect_node(state: ReflectionState):
     search_queries = []
     for attempt in range(5):
         chat = get_chat()
-        structured_llm = chat.with_structured_output(Research, include_raw=True)
+        
+        if isKorean(draft):
+            structured_llm = chat.with_structured_output(ResearchKor, include_raw=True)
+        else:
+            structured_llm = chat.with_structured_output(Research, include_raw=True)
             
         info = structured_llm.invoke(draft)
         print(f'attempt: {attempt}, info: {info}')
