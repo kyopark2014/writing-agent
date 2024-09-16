@@ -78,6 +78,13 @@ cdk deploy --require-approval never --all
 10) API에 대한 Credential을 획득하고 입력합니다.
 
 - 일반 검색을 위하여 [Tavily Search](https://app.tavily.com/sign-in)에 접속하여 가입 후 API Key를 발급합니다. 이것은 tvly-로 시작합니다.
+
+Tavily의 경우 1000건/월을 허용하므로 여러 건의 credential을 사용하면 편리합니다. 따라서, 아래와 같이 array형태로 입력합니다. 
+
+```java
+["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","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"]
+```
+
 - [langsmith.md](./langsmith.md)를 참조하여 [LangSmith](https://www.langchain.com/langsmith)에 가입후 API Key를 발급 받습니다.
 
 [Secret manger](https://us-west-2.console.aws.amazon.com/secretsmanager/listsecrets?region=us-west-2)에 접속하여,  [tavilyapikey-writing-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=tavilyapikey-writing-agent&region=us-west-2), [langsmithapikey-writing-agent](https://us-west-2.console.aws.amazon.com/secretsmanager/secret?name=langsmithapikey-writing-agent&region=us-west-2)에 접속하여, [Retrieve secret value]를 선택 후, api key를 입력합니다.
