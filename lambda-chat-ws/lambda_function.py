@@ -115,8 +115,26 @@ try:
 except Exception as e: 
     raise e
 
-if tavily_api_key:
-    os.environ["TAVILY_API_KEY"] = tavily_api_key
+def check_tavily_secret(tavily_api_key):
+    query = 'what is LangGraph'        
+    valid_keys = []
+    for key in tavily_api_key:
+        tavily_client = TavilyClient(api_key=key)
+        response = tavily_client.search(query, max_results=1)
+        print('tavily response: ', response)
+        
+        if 'results' in response and len(response['results']):
+            valid_keys.append(key)
+    print('valid_keys: ', valid_keys)
+    
+    return valid_keys
+
+tavily_api_key = check_tavily_secret(tavily_api_key)
+print('tavily_api_key: ', tavily_api_key)
+print('The number of valid tavily api key: ', len(tavily_api_key))
+
+if len(tavily_api_key):
+    os.environ["TAVILY_API_KEY"] = tavily_api_key[0]
       
 def tavily_search(query, max_results):
     docs = []
