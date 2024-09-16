@@ -654,16 +654,16 @@ class Research(BaseModel):
     )
 
 class ReflectionKor(BaseModel):
-    missing: str = Field(description="부족한 내용")
-    advisable: str = Field(description="추가하여야 할 내용")
-    superfluous: str = Field(description="불필요한 내용")
+    missing: str = Field(description="작성된 글에 있어야하는데 빠진 내용이나 단점")
+    advisable: str = Field(description="더 좋은 글이 되기 위해 추가하여야 할 내용")
+    superfluous: str = Field(description="글의 길이나 스타일에 대한 비평")
 
 class ResearchKor(BaseModel):
     """글쓰기를 개선하기 위한 검색 쿼리를 제공합니다."""
 
-    reflection: ReflectionKor = Field(description="작성된 글에서 수정할 부분")
+    reflection: ReflectionKor = Field(description="작성된 글에 대한 평가")
     search_queries: list[str] = Field(
-        description="현재 글의 문제점을 개선하기 위해 필요한 3개 이내의 검색어"
+        description="현재 글과 관련된 3개 이내의 검색어"
     )
     
 def reflect_node(state: ReflectionState):
