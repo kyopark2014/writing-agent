@@ -89,7 +89,7 @@ try:
     get_langsmith_api_secret = secretsmanager.get_secret_value(
         SecretId=f"langsmithapikey-{projectName}"
     )
-    #print('get_langsmith_api_secret: ', get_langsmith_api_secret)
+    # print('get_langsmith_api_secret: ', get_langsmith_api_secret)
     secret = json.loads(get_langsmith_api_secret['SecretString'])
     #print('secret: ', secret)
     langsmith_api_key = secret['langsmith_api_key']
@@ -110,13 +110,13 @@ try:
     )
     #print('get_tavily_api_secret: ', get_tavily_api_secret)
     secret = json.loads(get_tavily_api_secret['SecretString'])
-    #print('secret: ', secret)
+    print('secret: ', secret)
     tavily_api_key = secret['tavily_api_key']
 except Exception as e: 
     raise e
 
 if tavily_api_key:
-    os.environ["TAVILY_API_KEY"] = tavily_api_key 
+    os.environ["TAVILY_API_KEY"] = tavily_api_key
       
 def tavily_search(query, max_results):
     docs = []
