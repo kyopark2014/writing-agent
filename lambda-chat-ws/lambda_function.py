@@ -124,8 +124,7 @@ def tavily_search(query, max_results):
     try:
         tavily_client = TavilyClient(api_key=tavily_api_key)
         response = tavily_client.search(query, max_results=max_results)
-
-        print(response)
+        # print('tavily response: ', response)
         
         for r in response["results"]:
             name = r.get("title")
@@ -137,18 +136,19 @@ def tavily_search(query, max_results):
                     page_content=r.get("content"),
                     metadata={
                         'name': name,
-                        'uri': r.get("url"),
+                        'url': r.get("url"),
                         'from': 'tavily'
                     },
                 )
             )   
     except Exception as e:
         print('Exception: ', e)
+        
+    return docs
 
 result = tavily_search('what is LangChain', 2)
 print('search result: ', result)
 
-    
 # websocket
 connection_url = os.environ.get('connection_url')
 client = boto3.client('apigatewaymanagementapi', endpoint_url=connection_url)
