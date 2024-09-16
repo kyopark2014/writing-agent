@@ -32,9 +32,9 @@ else {
 console.log('multi_region: ', multiRegionInput.value);
 
 const ragInput = document.querySelector('#ragMode');
-let rag = localStorage.getItem('rag'); // set conversationType if exists 
-if(rag != '') {
-    ragInput.value = rag;
+let rag_mode = localStorage.getItem('ragMode'); // set conversationType if exists 
+if(rag_mode != '') {
+    ragInput.value = rag_mode;
 }
 else {
     ragInput.value = "disable"  

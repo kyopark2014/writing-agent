@@ -218,12 +218,12 @@ else {
 console.log('multi_region: ', multi_region);
 
 // multi region
-let rag = localStorage.getItem('rag'); // set userID if exists 
-if(rag=="" || rag==null) {
+let ragMode = localStorage.getItem('ragMode'); // set userID if exists 
+if(ragMode=="" || ragMode==null) {
     rag_mode = 'disable';    
 }
 else {
-    rag_mode = rag;
+    rag_mode = ragMode;
 }
 console.log('rag_mode: ', rag_mode);
 
