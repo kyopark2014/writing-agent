@@ -19,7 +19,7 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain_aws import ChatBedrock
 from multiprocessing import Process, Pipe
 
-from langchain_community.tools.tavily_search import TavilySearchResults
+# from langchain_community.tools.tavily_search import TavilySearchResults
 from PIL import Image
 
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage, SystemMessage, ToolMessage
@@ -129,7 +129,7 @@ def check_tavily_secret(tavily_api_key):
                 valid_keys.append(key)
         except Exception as e:
             print('Exception: ', e)
-    print('valid_keys: ', valid_keys)
+    # print('valid_keys: ', valid_keys)
     
     return valid_keys
 
@@ -176,8 +176,8 @@ def tavily_search(query, max_results):
             print('Exception: ', e)
     return docs
 
-result = tavily_search('what is LangChain', 2)
-print('search result: ', result)
+# result = tavily_search('what is LangChain', 2)
+# print('search result: ', result)
 
 # websocket
 connection_url = os.environ.get('connection_url')
@@ -898,8 +898,8 @@ def revise_draft(state: ReflectionState):
     ])
                               
     filtered_docs = []    
-    
-    # RAG - knowledge base        
+        
+    # RAG - knowledge base
     if rag_state=='enable':
         for q in search_queries:
             docs = retrieve_from_knowledge_base(q)
@@ -909,6 +909,14 @@ def revise_draft(state: ReflectionState):
                 filtered_docs += grade_documents(q, docs)
     
     # web search
+    for q in search_queries:
+        docs = tavily_search(q, 4)
+        print(f'q: {q}, WEB: {docs}')
+        
+        if len(docs):
+            filtered_docs += grade_documents(q, docs)
+    
+    """
     search = TavilySearchResults(max_results=4)
     for q in search_queries:
         response = search.invoke(q)
@@ -930,8 +938,9 @@ def revise_draft(state: ReflectionState):
         print('docs from web search: ', docs)
         
         if len(docs):
-            filtered_docs += grade_documents(q, docs)
-        
+            filtered_docs += grade_documents(q, docs)    
+    """
+    
     print('filtered_docs: ', filtered_docs)
               
     content = []   
