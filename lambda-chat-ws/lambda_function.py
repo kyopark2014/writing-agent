@@ -110,19 +110,19 @@ try:
     )
     #print('get_tavily_api_secret: ', get_tavily_api_secret)
     secret = json.loads(get_tavily_api_secret['SecretString'])
-    print('secret: ', secret)
+    # print('secret: ', secret)
     tavily_api_key = json.loads(secret['tavily_api_key'])
-    print('tavily_api_key: ', tavily_api_key)
+    # print('tavily_api_key: ', tavily_api_key)
 except Exception as e: 
     raise e
 
 def check_tavily_secret(tavily_api_key):
-    query = 'what is LangGraph'        
+    query = 'what is LangGraph'
     valid_keys = []
     for key in tavily_api_key:
         tavily_client = TavilyClient(api_key=key)
         response = tavily_client.search(query, max_results=1)
-        print('tavily response: ', response)
+        # print('tavily response: ', response)
         
         if 'results' in response and len(response['results']):
             valid_keys.append(key)
@@ -131,38 +131,46 @@ def check_tavily_secret(tavily_api_key):
     return valid_keys
 
 tavily_api_key = check_tavily_secret(tavily_api_key)
-print('tavily_api_key: ', tavily_api_key)
-print('The number of valid tavily api key: ', len(tavily_api_key))
+# print('tavily_api_key: ', tavily_api_key)
+print('The number of valid tavily api keys: ', len(tavily_api_key))
 
+selected_tavily = -1
 if len(tavily_api_key):
     os.environ["TAVILY_API_KEY"] = tavily_api_key[0]
+    selected_tavily = 0
       
 def tavily_search(query, max_results):
+    global selected_tavily
     docs = []
     
-    try:
-        tavily_client = TavilyClient(api_key=tavily_api_key)
-        response = tavily_client.search(query, max_results=max_results)
-        # print('tavily response: ', response)
-        
-        for r in response["results"]:
-            name = r.get("title")
-            if name is None:
-                name = 'WWW'
-        
-            docs.append(
-                Document(
-                    page_content=r.get("content"),
-                    metadata={
-                        'name': name,
-                        'url': r.get("url"),
-                        'from': 'tavily'
-                    },
-                )
-            )   
-    except Exception as e:
-        print('Exception: ', e)
-        
+    if selected_tavily != -1:
+        try:
+            tavily_client = TavilyClient(api_key=tavily_api_key[selected_tavily])
+            response = tavily_client.search(query, max_results=max_results)
+            # print('tavily response: ', response)
+            
+            for r in response["results"]:
+                name = r.get("title")
+                if name is None:
+                    name = 'WWW'
+            
+                docs.append(
+                    Document(
+                        page_content=r.get("content"),
+                        metadata={
+                            'name': name,
+                            'url': r.get("url"),
+                            'from': 'tavily'
+                        },
+                    )
+                )   
+            
+            selected_tavily = selected_tavily + 1
+            if selected_tavily == len(tavily_api_key):
+                selected_tavily = 0
+                
+        except Exception as e:
+            print('Exception: ', e)
     return docs
 
 result = tavily_search('what is LangChain', 2)
