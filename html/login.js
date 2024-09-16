@@ -29,7 +29,7 @@ if(multi_region != '') {
 else {
     multiRegionInput.value = "disable"  
 }
-console.log(multiRegionInput.value);
+console.log('multi_region: ', multiRegionInput.value);
 
 const ragInput = document.querySelector('#rag');
 let rag = localStorage.getItem('rag'); // set conversationType if exists 
@@ -39,7 +39,7 @@ if(rag != '') {
 else {
     ragInput.value = "disable"  
 }
-console.log(ragInput.value);
+console.log('ragInput: ', ragInput.value);
 
 // provisioning
 getProvisioningInfo(userId);
