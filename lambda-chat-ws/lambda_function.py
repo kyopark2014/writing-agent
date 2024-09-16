@@ -838,7 +838,7 @@ def retrieve_from_knowledge_base(query):
                 page_content=excerpt,
                 metadata={
                     'name': name,
-                    'uri': link,
+                    'url': link,
                     'from': 'RAG'
                 },
             )
