@@ -456,7 +456,20 @@ class Research(BaseModel):
     search_queries: list[str] = Field(
         description="1-3 search queries for researching improvements to address the critique of your current writing."
     )
-    
+
+class ReflectionKor(BaseModel):
+    missing: str = Field(description="작성된 글에 있어야하는데 빠진 내용이나 단점")
+    advisable: str = Field(description="더 좋은 글이 되기 위해 추가하여야 할 내용")
+    superfluous: str = Field(description="글의 길이나 스타일에 대한 비평")
+
+class ResearchKor(BaseModel):
+    """글쓰기를 개선하기 위한 검색 쿼리를 제공합니다."""
+
+    reflection: ReflectionKor = Field(description="작성된 글에 대한 평가")
+    search_queries: list[str] = Field(
+        description="현재 글과 관련된 3개 이내의 검색어"
+    )    
+
 def reflect_node(state: ReflectionState):
     print("###### reflect ######")
     draft = state['draft']
@@ -465,8 +478,11 @@ def reflect_node(state: ReflectionState):
     search_queries = []
     for attempt in range(5):
         chat = get_chat()
-        structured_llm = chat.with_structured_output(Research, include_raw=True)
-            
+        if isKorean(draft):
+            structured_llm = chat.with_structured_output(ResearchKor, include_raw=True)
+        else:
+            structured_llm = chat.with_structured_output(Research, include_raw=True)
+               
         info = structured_llm.invoke(draft)                
         if not info['parsed'] == None:
             parsed_info = info['parsed']
@@ -495,7 +511,7 @@ def reflect_node(state: ReflectionState):
     }
 ```
 
-Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG와 웹 검색(tavily)를 사용합니다. 
+Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG와 웹 검색()를 사용합니다. 
 
 ```python
 def revise_draft(state: ReflectionState):   
@@ -550,7 +566,6 @@ def revise_draft(state: ReflectionState):
     # RAG - knowledge base        
     for q in search_queries:
         docs = retrieve_from_knowledge_base(q)
-        print(f'q: {q}, RAG: {docs}')
         
         if len(docs):
             filtered_docs += grade_documents(q, docs)
@@ -600,6 +615,67 @@ def revise_draft(state: ReflectionState):
         "revised_draft": revised_draft,
         "revision_number": revision_number
     }
+
+knowledge_base_id = None
+def retrieve_from_knowledge_base(query):
+    global knowledge_base_id
+    if not knowledge_base_id:        
+        client = boto3.client('bedrock-agent')         
+        response = client.list_knowledge_bases(
+            maxResults=10
+        )
+                
+        if "knowledgeBaseSummaries" in response:
+            summaries = response["knowledgeBaseSummaries"]
+            for summary in summaries:
+                if summary["name"] == knowledge_base_name:
+                    knowledge_base_id = summary["knowledgeBaseId"]
+                    break
+    
+    relevant_docs = []
+    if knowledge_base_id:    
+        retriever = AmazonKnowledgeBasesRetriever(
+            knowledge_base_id=knowledge_base_id, 
+            retrieval_config={"vectorSearchConfiguration": {"numberOfResults": 2}},
+        )
+        relevant_docs = retriever.invoke(query)
+    
+    docs = []
+    for i, document in enumerate(relevant_docs):
+        print(f"{i}: {document.page_content}")
+        if document.page_content:
+            excerpt = document.page_content
+        
+        score = document.metadata["score"]
+        print('score:', score)
+        doc_prefix = "knowledge-base"
+        
+        link = ""
+        if "s3Location" in document.metadata["location"]:
+            link = document.metadata["location"]["s3Location"]["url"] if document.metadata["location"]["s3Location"]["url"] is not None else ""
+            
+            print('link:', link)    
+            pos = link.find(f"/{doc_prefix}")
+            name = link[pos+len(doc_prefix)+1:]
+            encoded_name = parse.quote(name)
+            print('name:', name)
+            link = f"{path}{doc_prefix}{encoded_name}"
+            
+        elif "webLocation" in document.metadata["location"]:
+            link = document.metadata["location"]["webLocation"]["url"] if document.metadata["location"]["webLocation"]["url"] is not None else ""
+            name = "Web Crawler"
+
+        docs.append(
+            Document(
+                page_content=excerpt,
+                metadata={
+                    'name': name,
+                    'url': link,
+                    'from': 'RAG'
+                },
+            )
+        )
+    return docs
 ```
 
 얻어진 결과가 실제 관련이 있는지를 확인하기 grade_documents()로 관련된 문서만을 추출합니다. 
