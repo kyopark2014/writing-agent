@@ -118,10 +118,30 @@ if tavily_api_key:
     os.environ["TAVILY_API_KEY"] = tavily_api_key
     
 from tavily import TavilyClient    
-print('tavily_api_key: ', tavily_api_key)
-tavily_client = TavilyClient(api_key=tavily_api_key)
-response = tavily_client.search("Who is Leo Messi?")
-print(response)
+def tavily_search(query, max_results):
+    try:
+        tavily_client = TavilyClient(api_key=tavily_api_key)
+        response = tavily_client.search(query, max_results=max_results)
+
+        print(response)
+        
+        for re in response['results']:
+            title = re['title']
+            url = re['url']
+            content = re['content']
+            
+            print('score: ', re['score'])
+            
+            print('title: ', title)
+            print('url: ', url)
+            print('content: ', content)
+
+    except Exception as e:
+        print('Exception: ', e)
+
+tavily_search('what is LangChain', 2)
+
+    
     
 # websocket
 connection_url = os.environ.get('connection_url')
