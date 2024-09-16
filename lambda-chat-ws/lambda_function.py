@@ -142,14 +142,18 @@ if len(tavily_api_key):
     os.environ["TAVILY_API_KEY"] = tavily_api_key[0]
     selected_tavily = 0
       
-def tavily_search(query, max_results):
+def tavily_search(query, k):
     global selected_tavily
     docs = []
-    
+        
     if selected_tavily != -1:
+        selected_tavily = selected_tavily + 1
+        if selected_tavily == len(tavily_api_key):
+            selected_tavily = 0
+
         try:
             tavily_client = TavilyClient(api_key=tavily_api_key[selected_tavily])
-            response = tavily_client.search(query, max_results)
+            response = tavily_client.search(query, max_results=k)
             # print('tavily response: ', response)
             
             for r in response["results"]:
@@ -167,11 +171,6 @@ def tavily_search(query, max_results):
                         },
                     )
                 )   
-            
-            selected_tavily = selected_tavily + 1
-            if selected_tavily == len(tavily_api_key):
-                selected_tavily = 0
-                
         except Exception as e:
             print('Exception: ', e)
     return docs
