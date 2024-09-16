@@ -120,12 +120,15 @@ def check_tavily_secret(tavily_api_key):
     query = 'what is LangGraph'
     valid_keys = []
     for key in tavily_api_key:
-        tavily_client = TavilyClient(api_key=key)
-        response = tavily_client.search(query, max_results=1)
-        # print('tavily response: ', response)
-        
-        if 'results' in response and len(response['results']):
-            valid_keys.append(key)
+        try:
+            tavily_client = TavilyClient(api_key=key)
+            response = tavily_client.search(query, max_results=1)
+            # print('tavily response: ', response)
+            
+            if 'results' in response and len(response['results']):
+                valid_keys.append(key)
+        except Exception as e:
+            print('Exception: ', e)
     print('valid_keys: ', valid_keys)
     
     return valid_keys
