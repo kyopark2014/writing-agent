@@ -27,9 +27,19 @@ if(multi_region != '') {
     multiRegionInput.value = multi_region;
 }
 else {
-    multiRegionInput.value = "disable"  // general conversation
+    multiRegionInput.value = "disable"  
 }
 console.log(multiRegionInput.value);
+
+const ragInput = document.querySelector('#rag');
+let rag = localStorage.getItem('rag'); // set conversationType if exists 
+if(rag != '') {
+    ragInput.value = rag;
+}
+else {
+    ragInput.value = "disable"  
+}
+console.log(ragInput.value);
 
 // provisioning
 getProvisioningInfo(userId);

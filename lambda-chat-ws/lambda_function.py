@@ -836,13 +836,15 @@ def revise_draft(state: ReflectionState):
     ])
                               
     filtered_docs = []    
+    
     # RAG - knowledge base        
-    #for q in search_queries:
-    #    docs = retrieve_from_knowledge_base(q)
-    #    print(f'q: {q}, RAG: {docs}')
+    if rag_state=='enable':
+        for q in search_queries:
+            docs = retrieve_from_knowledge_base(q)
+            print(f'q: {q}, RAG: {docs}')
         
-    ##    if len(docs):
-    #        filtered_docs += grade_documents(q, docs)
+            if len(docs):
+                filtered_docs += grade_documents(q, docs)
     
     # web search
     search = TavilySearchResults(max_results=4)
@@ -1678,6 +1680,13 @@ def getResponse(connectionId, jsonBody):
     if "multi_region" in jsonBody:
         multi_region = jsonBody['multi_region']
     print('multi_region: ', multi_region)
+    
+    global rag_state    
+    if "rag" in jsonBody:
+        rag_state = jsonBody['rag']
+    else:
+        rag_state = 'disable'
+    print('rag_state: ', rag_state)
         
     print('initiate....')
     global reference_docs
