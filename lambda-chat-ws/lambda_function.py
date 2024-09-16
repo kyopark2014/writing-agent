@@ -837,15 +837,15 @@ def revise_draft(state: ReflectionState):
                               
     filtered_docs = []    
     # RAG - knowledge base        
-    for q in search_queries:
-        docs = retrieve_from_knowledge_base(q)
-        print(f'q: {q}, RAG: {docs}')
+    #for q in search_queries:
+    #    docs = retrieve_from_knowledge_base(q)
+    #    print(f'q: {q}, RAG: {docs}')
         
-        if len(docs):
-            filtered_docs += grade_documents(q, docs)
+    ##    if len(docs):
+    #        filtered_docs += grade_documents(q, docs)
     
     # web search
-    search = TavilySearchResults(max_results=2)
+    search = TavilySearchResults(max_results=4)
     for q in search_queries:
         response = search.invoke(q)
         print(f'q: {q}, WEB: {response}')
