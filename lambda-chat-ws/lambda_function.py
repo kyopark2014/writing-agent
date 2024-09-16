@@ -117,11 +117,11 @@ except Exception as e:
 if tavily_api_key:
     os.environ["TAVILY_API_KEY"] = tavily_api_key
     
-#from tavily import TavilyClient    
-#print('tavily_api_key: ', tavily_api_key)
-#tavily_client = TavilyClient(api_key=tavily_api_key)
-#response = tavily_client.search("Who is Leo Messi?")
-#print(response)
+from tavily import TavilyClient    
+print('tavily_api_key: ', tavily_api_key)
+tavily_client = TavilyClient(api_key=tavily_api_key)
+response = tavily_client.search("Who is Leo Messi?")
+print(response)
     
 # websocket
 connection_url = os.environ.get('connection_url')
