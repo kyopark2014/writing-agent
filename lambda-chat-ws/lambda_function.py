@@ -149,7 +149,7 @@ def tavily_search(query, max_results):
     if selected_tavily != -1:
         try:
             tavily_client = TavilyClient(api_key=tavily_api_key[selected_tavily])
-            response = tavily_client.search(query, max_results=max_results)
+            response = tavily_client.search(query, max_results)
             # print('tavily response: ', response)
             
             for r in response["results"]:
@@ -1395,7 +1395,7 @@ def buildLongTermWriting():
         
     return workflow.compile()
 
-def run_long_term_writing_agent(connectionId, requestId, query):    
+def run_long_form_writing_agent(connectionId, requestId, query):    
     app = buildLongTermWriting()
     
     # Run the workflow
@@ -1829,8 +1829,8 @@ def getResponse(connectionId, jsonBody):
                 if convType == 'normal':      # normal
                     msg = general_conversation(connectionId, requestId, chat, text)                  
 
-                elif convType == 'long-term-writing-agent':  # long writing
-                    msg = run_long_term_writing_agent(connectionId, requestId, text)
+                elif convType == 'long-form-writing-agent':  # long writing
+                    msg = run_long_form_writing_agent(connectionId, requestId, text)
 
                 elif convType == "translation":
                     msg = translate_text(chat, text) 
