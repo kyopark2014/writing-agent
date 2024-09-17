@@ -1376,7 +1376,7 @@ def revise_answer(state: State):
         "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
     }
         
-def buildLongformWriting():
+def buildLongFormWriting():
     workflow = StateGraph(State)
 
     # Add nodes
@@ -1395,7 +1395,7 @@ def buildLongformWriting():
     return workflow.compile()
 
 def run_long_form_writing_agent(connectionId, requestId, query):    
-    app = buildLongformWriting()
+    app = buildLongFormWriting()
     
     # Run the workflow
     isTyping(connectionId, requestId)        
