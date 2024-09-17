@@ -96,7 +96,7 @@ def buildReflection():
 
 ## Plan and Execute
 
-LLM의 output token과 관련하여 [Anthropic의 Claude3의 경우](https://docs.anthropic.com/en/docs/about-claude/models)의 경우에 4k를 제공하고 있습니다. 일반적인 질문과 답변(Q&A) 형태에서는 충분한 크기이지만, 장문의 글은 4k보다는 큰 출력을 요구합니다. 또한, 사람들은 긴글을 작성하기위해 목차를 정하고 상세한 내용을 채워가는 방식을 사용합니다. 이러한 사람의 사고방식을 따라서, 여기에서는 plan and execute 패턴을 사용하여 먼저 목차를 정하고 각 세부 내용을 작성합니다. 이러한 패턴은 여러번의 LLM 출력을 이용할 수 있도록 해주므로, LLM 출력 토큰수의 제한을 극복할 수 있습니다.
+LLM의 output token과 관련하여 [Anthropic의 Claude3의 경우](https://docs.anthropic.com/en/docs/about-claude/models)에 4k를 제공하고 있습니다. 일반적인 질문과 답변(Q&A) 형태에서는 충분한 크기이지만, 장문의 글은 4k보다는 큰 출력을 요구합니다. 또한, 사람들은 긴글을 작성하기위해 목차를 정하고 상세한 내용을 채워가는 방식을 사용합니다. 이러한 사람의 사고방식을 따라서, 여기에서는 plan and execute 패턴을 사용하여 먼저 목차를 정하고 각 세부 내용을 작성합니다. 이러한 패턴은 여러번의 LLM 출력을 이용할 수 있도록 해주므로, LLM 출력 토큰수의 제한을 극복할 수 있습니다.
 
 사용자의 지시사항(instruction)을 이용하여 plan node는 n개의 계획(plan)을 생성합니다. Execution node는 instruction, plans과 현재 step을 이용하여 초안(draft)들을 생성합니다. 
 
