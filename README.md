@@ -15,7 +15,7 @@
 
 ## 구현된 Architecture
 
-LangGraph로 Long term writing을 구현하기 위하여 아래와 같은 serverless architecture를 이용합니다. 이를 통해 트래픽이 없는 경우에는 비용이 거의 발생하지 않으며, 트래픽이 높아질때에는 자동으로 스케일 아웃(Scale out)함으로써 변화하는 트래픽에 효과적으로 대응할 수 있습니다.
+LangGraph로 Long form writing을 구현하기 위하여 아래와 같은 serverless architecture를 이용합니다. 이를 통해 트래픽이 없는 경우에는 비용이 거의 발생하지 않으며, 트래픽이 높아질때에는 자동으로 스케일 아웃(Scale out)함으로써 변화하는 트래픽에 효과적으로 대응할 수 있습니다.
 
 1) 사용자의 질문과 답변의 양방향 대화를 원할히 수행할 수 있도록 클라이언트와 애틀리케이션 서버간 연결에 WebSocket을 이용합니다. 이때 WebSocket의 Endpoint는 [WebSocket을 지원하는 API Gateway](https://docs.aws.amazon.com/ko_kr/apigateway/latest/developerguide/apigateway-websocket-api-overview.html)를 이용합니다. 이때 사용자의 입력은 json형태로 message-id와 converstion-type과 같은 정보를 포함합니다. 
 2) AWS Lambda는 사용자의 입력을 받으면 LangGraph의 Workflow를 이용하여 순차적으로 명령을 수행합니다. 여기서 사용자의 입력은 글쓰기를 위한 지시사항으로써, LangGraph의 [plan-and-execute 패턴](https://langchain-ai.github.io/langgraph/tutorials/plan-and-execute/plan-and-execute/#create-the-graph)에 따라 먼저 단계별로 글쓰는 주제를 선정합니다. 선정된 주제에 따라 초안(draft)를 생성합니다.
@@ -25,7 +25,7 @@ LangGraph로 Long term writing을 구현하기 위하여 아래와 같은 server
 ![image](https://github.com/user-attachments/assets/f2fa332d-0e44-4f92-90e3-0d5d4b5babe5)
 
 
-## Long Term Writing
+## Long Form Writing
 
 전체적인 activity diagram은 아래와 같습니다. 여기에서는 [plan and excute 패턴을 가지는 agent](https://langchain-ai.github.io/langgraph/tutorials/plan-and-execute/plan-and-execute/)와 [reflection을 수행하는 agent](https://blog.langchain.dev/reflection-agents/)를 이용하여 instruction으로 장문의 글쓰기를 수행합니다. 여기서는 multi agent 구조를 이용하여 복잡한 workflow를 손쉽게 구현합니다. 이러한 구조는 [essay-writer](https://github.com/kyopark2014/langgraph-agent/blob/main/essay-writer.md#easy-writer)의 multi agent와 유사한 방식이지만, 워크플로우를 2개로 분리하여, 워크플로우별로 최적화가 가능하도록 구조를 개선하였고, reflection에 대한 워크플로우를 초안들(dfrafts)의 숫자만큼 병렬로 처리할 수 있으므로 전체적인 동작 속도를 개선할 수 있습니다.
 
@@ -41,7 +41,7 @@ class State(TypedDict):
     final_doc : str
     word_count : int
 
-def buildLongTermWriting():
+def buildLongFormWriting():
     workflow = StateGraph(State)
 
     # Add nodes
@@ -827,7 +827,7 @@ def should_continue(state: ReflectionState, config):
 1) 설치가 끝나면 WebClient에 접속합니다. 아래와 같이 [User Id]에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다
 2) [Parallel Processing]을 "Enable"로 설정하면 병렬처리를 통해 속도를 향상시킬 수 있습니다.
 3) Knowledge base로 RAG를 구성하였다면, [RAG]을 "Enable"로 설정합니다.
-4) 실행 메뉴에서 아래와 같이 "Long term writing"을 선택합니다. 
+4) 실행 메뉴에서 아래와 같이 "Long from writing"을 선택합니다. 
 
 ![image](https://github.com/user-attachments/assets/4bc110eb-6e98-45de-a3dc-ddf48c59d0ea)
 
