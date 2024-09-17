@@ -874,6 +874,8 @@ def should_continue(state: ReflectionState, config):
 
 - [AWS에서 ERP를 Cloud로 구축하는 방법](./contents/Deploying_ERP_on_AWS_Cloud.md)
 
+- [Apache, MIT 와 같은 라이선스에 대해 설명해줘](./contents/%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4_%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4_%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4_%EC%A2%85%EB%A5%98%EC%99%80_%EC%A1%B0%EA%B1%B4.md)
+
 - [Bedrock agent에 대해 설명해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/%EB%B2%A0%EB%93%9C%EB%A1%9D_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%8A%94_%EA%B0%95%ED%99%94%ED%95%99%EC%8A%B5_%EA%B8%B0%EB%B0%98_AI_%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%9E%85%EB%8B%88%EB%8B%A4.md)
 
 - [우주 여행을하면서 우주인을 만나는 여행에 대한 얘기를 해주세요. 여행지는 목성, 금성, 토성 입니다. 각 여행지에는 특별한 형태와 성격이 다양한 외계인이 있어요. 이들은 성경이 좋기도하고 괴팍하기도 하고 항상 슬프거나 즐겁기도 합니다. 각 별의 외계인의 성격은 마음껏 상상해도 됩니다. 우리는 이들과 우정을 쌓으면서 여행을 하게 되고 마지막에는 지구로 함께 돌아와 재미있게 놀 예정이에요.](./contents/Meeting_aliens_on_space_travel..md)
