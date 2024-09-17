@@ -181,10 +181,11 @@ def plan_node(state: State):
 이때 "Advanced RAG란?"와 같은 질문에 의해 생성된 Plan의 예는 아래와 같습니다. 
 
 ```python
-1. Main Point: Advanced RAG(Retrieval Augmented Generation)는 대규모 언어 모델의 지식 증강 기술로, 외부 데이터베이스나 지식원으로부터 관련 정보를 검색하여 언어 모델의 생성 능력을 향상시키는 방법입니다. 이 기술의 핵심 아이디어와 작동 원리, 그리고 기존 언어 모델과의 차이점을 설명합니다. Word Count: 800 words
-2. Main Point: Advanced RAG의 구조와 구성 요소(retriever, reader, generator 등)에 대해 자세히 설명하고, 각 구성 요소의 역할과 상호 작용 방식을 설명합니다. 또한 RAG 모델 학습 과정과 관련 기술(retrieval, re-ranking, marginalized augmented generation 등)에 대해 설명합니다. Word Count: 2000 words  
-3. Main Point: Advanced RAG의 다양한 응용 분야와 사례(질의 응답, 요약, 데이터 증강 등)를 소개하고, 각 분야에서 RAG가 어떻게 활용되는지 구체적인 예시를 들어 설명합니다. Word Count: 1500 words
-4. Main Point: Advanced RAG의 장단점과 한계점, 그리고 향후 발전 방향에 대해 논의합니다. RAG 기술의 윤리적, 사회적 영향과 도전 과제에 대해서도 다룹니다. Word Count: 1200 words
+1. Main Point: VPC(Virtual Private Cloud)의 개념과 특징을 설명하고, VPC를 사용하는 이유와 장점을 설명합니다. Word Count: 800 words
+2. Main Point: VPC를 생성하고 구성하는 단계별 절차를 자세히 설명합니다. 여기에는 VPC 생성, 서브넷 생성, 라우팅 테이블 구성, 인터넷 게이트웨이 연결 등이 포함됩니다. Word Count: 1500 words  
+3. Main Point: 다른 VPC와 VPC를 안전하게 연결하는 방법을 설명합니다. VPN 연결, VPC 피어링, 전송 게이트웨이 등의 옵션을 소개하고 각각의 장단점을 비교합니다. Word Count: 1200 words
+4. Main Point: VPC 연결 후 트래픽 흐름과 보안 그룹, 네트워크 ACL 등의 보안 메커니즘을 구성하는 방법을 설명합니다. 연결된 VPC 간 리소스 공유 및 액세스 제어에 대해서도 다룹니다. Word Count: 1000 words
+5. Main Point: VPC 연결 후 모니터링 및 문제 해결 방법을 설명합니다. 네트워크 흐름 로그, VPC 흐름 로그 등의 모니터링 도구와 일반적인 문제 해결 단계를 소개합니다. Word Count: 800 words
 ```
 
 Plan 노드에서 생성된 글쓰기 작성 계획을 이용하여 execute 노드에서는 아래와 같이 각 단락을 작성합니다. 단락 작성시 처음 요청된 글쓰기 지시사항, 전체 글쓰기 단계와 이전 단계에서 작성한 텍스트를 제공한 후에 현재 step을 주고 이어서 작성하도록 요청합니다. LLM에게 글쓰기 지시사항, 전체 글쓰기 단계, 작성된 텍스트를 제공함으로써 이전에 작성된 글의 문맥을 잊어버리지 않고 원하는 문단을 작성하도록 할 수 있습니다. 이러한 방식은 매 단락 작성시 이전 문장 전체를 입력 context에 제공해야 함으로써 사용되는 token 수의 증가와 전체 문장의 내용이 입력 context로 제한됩니다. Anthropic의 Claude 3의 경우에 200k token을 제공하므로 MS Word 기준으로 10 페이지 내외의 문서는 작성 가능하지만 이보다 큰 용도로 사용하기 위해서는 이전 글씨나 단계의 내용을 조정하거나 요약하는 방법을 이용합니다. 
@@ -359,12 +360,10 @@ def revise_answer(state: State):
 작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도로고 markdown 형태를 이용하였습니다. 아래 작성된 초안(draft)과 같이 markdown 형태는 문단이 "###"으로 구분됩니다. 
 
 ```text
-### Advanced RAG의 응용 분야와 사례
-Advanced RAG는 다양한 분야에서 활용될 수 있으며, 특히 질의 응답, 요약, 데이터 증강 등의 분야에서 큰 잠재력을 보이고 있습니다.
-**질의 응답(Question Answering)**은 Advanced RAG의 가장 대표적인 응용 분야입니다. RAG 모델은 주어진 질문에 대해 외부 데이터베이스에서 관련 정보를 검색하고, 이를 바탕으로 정확한 답변을 생성할 수 있습니다. 예를 들어, 의학 분야에서 RAG 모델은 환자의 증상과 관련된 의학 문헌을 검색하여 진단과 치료 방법을 제안할 수 있습니다. 또한 법률 분야에서는 관련 법규와 판례를 검색하여 법적 자문을 제공할 수 있습니다.
-**요약(Summarization)** 분야에서도 RAG 모델이 활용될 수 있습니다. 긴 문서나 여러 문서에서 핵심 내용을 추출하고 간결하게 요약하는 작업에서 RAG 모델은 외부 지식원을 활용하여 더 정확하고 포괄적인 요약을 생성할 수 있습니다. 예를 들어, 뉴스 기사를 요약할 때 RAG 모델은 관련 배경 지식을 검색하여 중요한 맥락 정보를 포함시킬 수 있습니다.
-**데이터 증강(Data Augmentation)** 분야에서도 RAG 모델이 유용하게 활용될 수 있습니다. 기계 학습 모델을 학습시키기 위해서는 대량의 데이터가 필요한데, RAG 모델을 사용하면 기존 데이터에 외부 지식을 추가하여 데이터를 증강시킬 수 있습니다. 예를 들어, 자연어 처리 모델을 학습시킬 때 RAG 모델을 사용하여 기존 데이터에 관련 백과사전 정보를 추가하면 모델의 성능을 향상시킬 수 있습니다.
-이 외에도 Advanced RAG는 정보 추출, 지식 그래프 구축, 대화 시스템 등 다양한 분야에서 활용될 수 있습니다. RAG 모델은 외부 지식원을 효과적으로 활용하여 기존 언어 모델의 한계를 극복하고 더 나은 성능을 제공할 수 있습니다.
+### VPC(Virtual Private Cloud)란?
+VPC(Virtual Private Cloud)는 AWS에서 제공하는 가상 네트워크 서비스입니다. VPC를 사용하면 AWS 클라우드 내에서 논리적으로 격리된 가상 네트워크를 프로비저닝할 수 있습니다. 이 가상 네트워크는 IP 주소 범위, 서브넷, 라우팅 테이블, 네트워크 게이트웨이 등을 포함하며, 사용자가 완전히 제어할 수 있습니다.
+VPC는 기존 데이터 센터의 운영 모델을 클라우드로 가져와 AWS 리소스를 호스팅하는 가상 네트워크 환경을 제공합니다. VPC를 사용하면 AWS 리소스를 논리적으로 격리하고, 인터넷 게이트웨이 또는 가상 프라이빗 게이트웨이를 통해 인터넷 또는 회사 데이터 센터에 액세스할 수 있습니다. 또한 VPC 내에서 네트워크 ACL(Access Control List)과 보안 그룹을 사용하여 인바운드 및 아웃바운드 트래픽을 제어할 수 있습니다.
+VPC를 사용하는 주요 이유는 클라우드 리소스에 대한 보안과 액세스 제어, 네트워크 격리, 확장성 및 유연성 등입니다. VPC를 통해 AWS 리소스를 안전하게 호스팅하고 회사 데이터 센터와 연결할 수 있습니다. 또한 VPC는 확장 가능하며 다양한 네트워크 구성을 지원하므로 비즈니스 요구 사항에 맞게 쉽게 조정할 수 있습니다.
 ```
 
 Reflection 과정은 문장의 개선점을 찾고 부족한 부분은 검색하고 이를 적용하는 작업을 반복함으로써 전체 문단들을 순차적으로 진행하기 보다는 reflect_drafts_using_parallel_processing()와 같이 병렬 처리하는 것이 합리적입니다. 각 문단은 reflect_draft()을 통해 수정 작업을 수행합니다. 문단을 병렬 처리할 경우에 각 문단의 개선 작업 시간은 각 문단의 길이와 검색하는 컨텐츠의 양에 따라 달라집니다. 따라서, 아래와 같이 문단에 대한 개선작업 요청에 문서의 인덱스를 포함하고, 결과를 json 형태로 받아서 각 index에 따라 수정된 문단(revised_draft)을 배치합니다. 
@@ -509,6 +508,37 @@ def reflect_node(state: ReflectionState):
         "search_queries": search_queries,
         "revision_number": revision_number + 1
     }
+```
+
+하나의 단락에 대한 reflection의 결과는 아래와 같습니다.
+
+```java
+{
+   "reflection":{
+      "advisable":"VPC 간 연결 후 트래픽 흐름과 보안 구성에 대한 설명이 잘 되어 있습니다. 트래픽 제어를 위한 라우팅 테이블, 보안 그룹, \
+        네트워크 ACL 구성과 리소스 공유 및 액세스 제어를 위한 IAM 정책, VPC 엔드포인트 활용 방안 등을 자세히 설명하고 있습니다.",
+      "missing":"VPC 간 연결 유형별(VPN, VPC 피어링 등)로 구체적인 구성 방법에 대한 예시가 더 추가되면 좋겠습니다.",
+      "superfluous":"전반적으로 불필요한 내용은 없어 보입니다."
+   },
+   "search_queries":[
+      "VPC 피어링 보안 구성",
+      "VPN 연결 보안 구성",
+      "VPC 엔드포인트 보안"
+   ]
+}
+````
+
+영/한의 다양한 자료를 검색하기 위해 search_queries는 아래와 같이 구성합니다.
+
+```java
+[
+   "VPC 피어링 보안 구성",
+   "VPN 연결 보안 구성",
+   "VPC 엔드포인트 보안",
+   "VPC Peering Security Configuration",
+   "VPN connection security configuration",
+   "VPC Endpoint Security"
+]
 ```
 
 Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 content 내용을 바탕으로 revise_draft 노드에서는 아래와 같이 초안(draft)에 대한 개선 작업을 수행합니다. 문단의 개선은 draft, reflection, content를 가지고 수정을 진행합니다. 검색은 RAG와 웹 검색()를 사용합니다. 
@@ -763,7 +793,7 @@ def grade_document_based_on_relevance(conn, question, doc, models, selected):
 문단에 대한 평가 및 개선은 MAX_REVISIONS 만큰 수행합니다. 아래와 같이 should_continue()은 conditional edge로서 반복 숫자에 대한 조건문을 포함하고 있습니다. 
 
 ```python
-MAX_REVISIONS = 1
+MAX_REVISIONS = 2
 def should_continue(state: ReflectionState, config):
     print("###### should_continue ######")
     max_revisions = config.get("configurable", {}).get("max_revisions", MAX_REVISIONS)
