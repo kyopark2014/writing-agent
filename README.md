@@ -178,7 +178,7 @@ def plan_node(state: State):
     }
 ```
 
-이때 "Advanced RAG란?"와 같은 질문에 의해 생성된 Plan의 예는 아래와 같습니다. 
+"VPC와 VPC를 안전하게 연결하고 연결후 동작을 확인하는 방법"이라고 글쓰기의 지시사항을 입력하였을때에 생성된 Plan의 예는 아래와 같습니다. 
 
 ```python
 1. Main Point: VPC(Virtual Private Cloud)의 개념과 특징을 설명하고, VPC를 사용하는 이유와 장점을 설명합니다. Word Count: 800 words
