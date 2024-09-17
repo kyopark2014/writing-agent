@@ -854,6 +854,8 @@ def should_continue(state: ReflectionState, config):
 
 - [Python으로 생성한 텍스트 파일을 열었을때 한글이 깨지는 경우에 대한 대응방법](./contents/Text_file_encoding_issue_in_Python.md)
 
+- [Parent Child Retrieval 로 RAG 성능 향상 시키는 방법](https://github.com/kyopark2014/writing-agent/blob/main/contents/%EC%A7%80%EC%8B%9D_%EC%A6%9D%EA%B0%95_%EC%83%9D%EC%84%B1_%EB%AA%A8%EB%8D%B8_%EC%84%B1%EB%8A%A5_%ED%96%A5%EC%83%81.md)
+
 - [VPC와 VPC를 안전하게 연결하는 방법과, 연결이 잘되었는지 확인하는 방법에 대해 설명해주세요.](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8.md)
 
 - [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](./contents/Cloud_security_monitoring_and_threat_detection.md)
