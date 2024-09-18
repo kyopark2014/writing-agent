@@ -988,7 +988,7 @@ def should_continue(state: ReflectionState, config):
             
     if state["revision_number"] > max_revisions:
         return "end"
-    return "continue"        
+    return "continue"
     
 def buildReflection():
     workflow = StateGraph(ReflectionState)
@@ -1408,7 +1408,7 @@ def run_long_form_writing_agent(connectionId, requestId, query):
     }
     
     output = app.invoke(inputs, config)
-    print('output: ', output)
+    print('output (run_long_form_writing_agent): ', output)
     
     return output['final_doc']
 
@@ -1417,6 +1417,8 @@ def run_long_form_writing_agent(connectionId, requestId, query):
 #########################################################
 
 def continue_to_revise(state: State):
+    print('###### continue_to_revise ######')
+    
     return [Send("revise_answer", {"draft": s}) for s in state["drafts"]]
 
 class ReviseState(TypedDict):
@@ -1437,7 +1439,7 @@ def revise_answer(state: ReviseState):
         "max_revisions": 1
     }
     output = reflection_app.invoke(inputs, config)
-    print('output: ', output)
+    print('output (revise_answer): ', output)
                 
     revised_draft = output['revised_draft']
         
@@ -1544,7 +1546,7 @@ def run_long_form_writing_agent_parallel(connectionId, requestId, query):
     }
     
     output = app.invoke(inputs, config)
-    print('output: ', output)
+    print('output (run_long_form_writing_agent_parallel): ', output)
     
     return output['final_doc']
                 
