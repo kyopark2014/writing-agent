@@ -1447,14 +1447,17 @@ def revise_node(state: ReviseState):
         raise Exception("state is None")
     
     if not "idx" in state:
-        print('error state of idx: ', state)        
-        raise Exception("idx is None: "+state)
+        print('error state of idx: ', state)
+        
+        return {
+            "revised_drafts": "error"
+        }
+        # raise Exception("idx is None: ", state)
     
     print(f"###### revise_node {state['idx']} ######")
-    print(f"revise_node: {state['idx']}, {state['draft']}")    
+    print(f"revise_node --> draft[{state['idx']}]: {state['draft']}")    
     
     draft = state["draft"]        
-    print('draft: ', draft)
             
     reflection_app = buildReflection()
                     
@@ -1536,33 +1539,33 @@ def save_answer(state: State):
     }    
     
 def buildLongFormWritingMapReduce():
-    workflow = StateGraph(State)
+    graph = StateGraph(State)
 
     # Add nodes
-    workflow.add_node("plan_node", plan_node)
-    workflow.add_node("execute_node", execute_node)
-    workflow.add_node("revise_node", revise_node)
-    workflow.add_node("save_answer", save_answer)
+    graph.add_node("plan_node", plan_node)
+    graph.add_node("execute_node", execute_node)
+    graph.add_node("revise_node", revise_node)
+    graph.add_node("save_answer", save_answer)
     
     # Set entry point
-    workflow.set_entry_point("plan_node")
+    graph.set_entry_point("plan_node")
         
-    workflow.add_conditional_edges(
+    graph.add_conditional_edges(
         "execute_node", 
         continue_to_revise, 
         ["revise_node"]
     )
     
     # Add edges
-    workflow.add_edge("plan_node", "execute_node")
-    workflow.add_edge("execute_node", "revise_node")
-    workflow.add_edge("revise_node", "save_answer")
-    workflow.add_edge("save_answer", END)
+    graph.add_edge("plan_node", "execute_node")
+    graph.add_edge("execute_node", "revise_node")
+    graph.add_edge("revise_node", "save_answer")
+    graph.add_edge("save_answer", END)
         
-    return workflow.compile()
+    return graph.compile()
 
 def run_long_form_writing_agent_map_reduce(connectionId, requestId, query):    
-    app = buildLongFormWritingMapReduce()
+    app_mr = buildLongFormWritingMapReduce()
     
     # Run the workflow
     isTyping(connectionId, requestId)        
@@ -1573,7 +1576,7 @@ def run_long_form_writing_agent_map_reduce(connectionId, requestId, query):
         "recursion_limit": 50
     }
     
-    output = app.invoke(inputs, config)
+    output = app_mr.invoke(inputs, config)
     print('output (run_long_form_writing_agent_map_reduce): ', output)
     
     return output['final_doc']
