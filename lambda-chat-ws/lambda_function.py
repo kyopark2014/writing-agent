@@ -1466,6 +1466,7 @@ def revise_node(state: ReviseState):
     else:  # for empty state
         print("No draft provided")
         print('state: ', state)
+        revised_draft = "### No draft provided"
         
     return {
         "revised_drafts": revised_draft
