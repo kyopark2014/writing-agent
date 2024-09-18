@@ -818,9 +818,19 @@ def should_continue(state: ReflectionState, config):
 
 [Map Reduce 방식의 병렬처리](https://github.com/kyopark2014/langgraph-agent/blob/main/map-reduce-parallel-processing.md)와 같이 [langgraph의 Send API](https://langchain-ai.github.io/langgraph/concepts/low_level/#send)를 이용하여 병렬처리 할 수 있습니다.
 
-
 <img src="./chart/parallel_case2.png" width="800">
-   
+
+revise_answer 노드에서는 draft 하나에 대해서 처리하게 되므로 save_answer 노드에서 revised_draft를 모아서 처리합니다. 따라서 아래와 같이 state에 revised_drafts을 추가합니다. 
+
+```python   
+class State(TypedDict):
+    instruction : str
+    planning_steps : List[str]
+    drafts : List[str]
+    final_doc : str
+    word_count : int
+    revised_drafts: Annotated[list, operator.add]
+```
 
 
 
