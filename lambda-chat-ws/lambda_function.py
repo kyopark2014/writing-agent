@@ -1420,15 +1420,16 @@ def run_long_form_writing_agent(connectionId, requestId, query):
 
 def continue_to_revise(state: State):
     print('###### continue_to_revise ######')
+    print('state (continue_to_revise): ', state)
     
-    return [Send("revise_answer", {"draft": s}) for s in state["drafts"]]
+    return [Send("revise_node", {"draft": s}) for s in state["drafts"]]
 
 class ReviseState(TypedDict):
     draft: str
     
-def revise_answer(state: ReviseState):
-    print("###### revise_answer ######")
-    print('state (revise_answer): ', state)
+def revise_node(state: ReviseState):
+    print("###### revise_node ######")
+    print('state (revise_node): ', state)
     
     revised_draft = ""
     if "draft" in state:        
@@ -1445,10 +1446,10 @@ def revise_answer(state: ReviseState):
             "max_revisions": 1
         }
         output = reflection_app.invoke(inputs, config)
-        # print('output (revise_answer): ', output)
+        # print('output (revise_node): ', output)
                     
         revised_draft = output['revised_draft']
-        print('revised_draft (revise_answer): ', revised_draft)
+        print('revised_draft (revise_node): ', revised_draft)
     else:  # for empty state
         print("No draft provided")
         print('state: ', state)
@@ -1523,7 +1524,7 @@ def buildLongFormWritingMapReduce():
     # Add nodes
     workflow.add_node("plan_node", plan_node)
     workflow.add_node("execute_node", execute_node)
-    workflow.add_node("revise_answer", revise_answer)
+    workflow.add_node("revise_node", revise_node)
     workflow.add_node("save_answer", save_answer)
     
     # Set entry point
@@ -1532,13 +1533,13 @@ def buildLongFormWritingMapReduce():
     workflow.add_conditional_edges(
         "execute_node", 
         continue_to_revise, 
-        ["revise_answer"]
+        ["revise_node"]
     )
     
     # Add edges
     workflow.add_edge("plan_node", "execute_node")
-    workflow.add_edge("execute_node", "revise_answer")
-    workflow.add_edge("revise_answer", "save_answer")
+    workflow.add_edge("execute_node", "revise_node")
+    workflow.add_edge("revise_node", "save_answer")
     workflow.add_edge("save_answer", END)
         
     return workflow.compile()
