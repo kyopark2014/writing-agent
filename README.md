@@ -997,6 +997,8 @@ def save_answer(state: State):
 
 - [지방 조직이 분비하는 exosome들이 어떻게 면역체계에 역할을 하고 어떻게 하면 좋은 exosome들을 분비시켜 당뇨나 병을 예방할수 있는지 알려주세요.](./contents/Exosomes_from_fat_tissue_regulate_immunity.md)
 
+- [Exosomes secreted by fat tissue play a role in the immune system. Please explain how they can help prevent diabetes or disease by promoting the secretion of beneficial exosomes.](./contents/Exosomes_from_fat_tissue_and_immune_modulation.md)
+
 - [adipocyte cells (3T3L1)과 macrophages co-culutre 실험을 어떻게 design할수 있을까 ?](./contents/Co-culturing_adipocytes_and_macrophages.md)
 
 - [Python으로 생성한 텍스트 파일을 열었을때 한글이 깨지는 경우에 대한 대응방법](./contents/Text_file_encoding_issue_in_Python.md)
