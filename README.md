@@ -29,6 +29,10 @@ LangGraph로 Long form writing을 구현하기 위하여 아래와 같은 server
 
 전체적인 activity diagram은 아래와 같습니다. 여기에서는 [plan and excute 패턴을 가지는 agent](https://langchain-ai.github.io/langgraph/tutorials/plan-and-execute/plan-and-execute/)와 [reflection을 수행하는 agent](https://blog.langchain.dev/reflection-agents/)를 이용하여 instruction으로 장문의 글쓰기를 수행합니다. 여기서는 multi agent 구조를 이용하여 복잡한 workflow를 손쉽게 구현합니다. 이러한 구조는 [essay-writer](https://github.com/kyopark2014/langgraph-agent/blob/main/essay-writer.md#easy-writer)의 multi agent와 유사한 방식이지만, 워크플로우를 2개로 분리하여, 워크플로우별로 최적화가 가능하도록 구조를 개선하였고, reflection에 대한 워크플로우를 초안들(dfrafts)의 숫자만큼 병렬로 처리할 수 있으므로 전체적인 동작 속도를 개선할 수 있습니다.
 
+### 병렬처리 방법 (노드에서 처리)
+
+여기서는 노드에서 Python의 [multiprocessing](https://docs.python.org/ko/3/library/multiprocessing.html)을 이용해서 병렬처리 하는 방법을 설명합니다. 
+
 <img width="706" alt="image" src="https://github.com/user-attachments/assets/6fe65b1b-a591-4eae-af28-4b5d028774c5">
 
 여기서 좌측의 Plan and Execute 워크플로우는 아래와 같이 정의합니다.
@@ -93,6 +97,12 @@ def buildReflection():
         
     return workflow.compile()
 ```
+
+### 병렬처리 방법 (Map Reduce)
+
+[Map Reduce 방식의 병렬처리](https://github.com/kyopark2014/langgraph-agent/blob/main/map-reduce-parallel-processing.md)와 같이 [langgraph의 Send API](https://langchain-ai.github.io/langgraph/concepts/low_level/#send)를 이용하여 병렬처리 할 수 있습니다.
+
+
 
 ## Plan and Execute
 
