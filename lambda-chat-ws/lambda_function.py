@@ -1430,7 +1430,7 @@ def revise_answer(state: ReviseState):
     print("###### revise_answer ######")
     print('state (revise_answer): ', state)
     
-    revised_draft = []
+    revised_draft = ""
     if "draft" in state:        
         draft = state["draft"]        
         print('draft: ', draft)
@@ -1449,7 +1449,7 @@ def revise_answer(state: ReviseState):
                     
         revised_draft = output['revised_draft']
         print('revised_draft (revise_answer): ', revised_draft)
-    else:
+    else:  # for empty state
         print("No draft provided")
         print('state: ', state)
         
@@ -1467,7 +1467,8 @@ def save_answer(state: State):
         
     final_doc = ""
     for idx, revised_draft in enumerate(revised_drafts):
-        final_doc += revised_draft + '\n\n'
+        if revised_draft:
+            final_doc += revised_draft + '\n\n'
 
     subject = get_subject(instruction)
     subject = subject.replace(" ","_")
