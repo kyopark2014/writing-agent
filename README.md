@@ -814,9 +814,90 @@ def should_continue(state: ReflectionState, config):
 여기에서는 Amazon Bedrock의 완전관리형 RAG 서비스인 Knowledge Base를 이용하고 있습니다. Knowledge Base는 Amazon S3에 파일을 올리거나, web crawler를 이용해 하위 URL까지 문서를 가져올 수 있어서 편리합니다. 설치하는 방법은 [Knowledge Base로 Advanced RAG 구현](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/knowledge-base.md)을 참조합니다. 
 
 
-## 병렬처리 방법 (Map Reduce) 
+## 직접 실습 해보기
+
+### 사전 준비 사항
+
+이 솔루션을 사용하기 위해서는 사전에 아래와 같은 준비가 되어야 합니다.
+
+- [AWS Account 생성](https://repost.aws/ko/knowledge-center/create-and-activate-aws-account)
+
+
+
+### CDK를 이용한 인프라 설치
+[인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
+
+
+### 실행 방법
+
+1) 설치가 끝나면 WebClient에 접속합니다. 아래와 같이 [User Id]에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다
+2) [Parallel Processing]을 "Enable"로 설정하면 병렬처리를 통해 속도를 향상시킬 수 있습니다.
+3) Knowledge base로 RAG를 구성하였다면, [RAG]을 "Enable"로 설정합니다.
+4) 실행 메뉴에서 아래와 같이 "Long from writing"을 선택합니다. 
+
+![image](https://github.com/user-attachments/assets/4bc110eb-6e98-45de-a3dc-ddf48c59d0ea)
+
+
+### 실행 결과
+
+"VPC와 VPC를 안전하게 연결하고 연결후 동작을 확인하는 방법"이라고 입력하면 아래와 같은 결과를 얻을 수 있습니다.
+
+![image](https://github.com/user-attachments/assets/4ac97942-4db8-4cb5-bd06-d0a4a6a4633e)
+
+하단의 [미리보기 링크]을 선택하면 [markdown 파일](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8.md)의 내용을 아래와 같이 확인할 수 있습니다.
+
+![image](https://github.com/user-attachments/assets/14fbb094-21ba-4d92-931f-423d5f6f4872)
+
+이때의 동작은 아래와 같이 LangSmith에서 확인할 수 있습니다. 여기에서는 결과를 얻기까지 약140초가 소요되었습니다. 
+
+![image](https://github.com/user-attachments/assets/566981f1-ba1b-4219-a6d1-5e36595d4809)
+
+### 결과 예제
+
+- [지방 조직이 분비하는 exosome들이 어떻게 면역체계에 역할을 하고 어떻게 하면 좋은 exosome들을 분비시켜 당뇨나 병을 예방할수 있는지 알려주세요.](./contents/Exosomes_from_fat_tissue_regulate_immunity.md)
+
+- [Exosomes secreted by fat tissue play a role in the immune system. Please explain how they can help prevent diabetes or disease by promoting the secretion of beneficial exosomes.](./contents/Exosomes_from_fat_tissue_and_immune_modulation.md)
+
+- [adipocyte cells (3T3L1)과 macrophages co-culutre 실험을 어떻게 design할수 있을까 ?](./contents/Co-culturing_adipocytes_and_macrophages.md)
+
+- [Python으로 생성한 텍스트 파일을 열었을때 한글이 깨지는 경우에 대한 대응방법](./contents/Text_file_encoding_issue_in_Python.md)
+
+- [Parent Child Retrieval 로 RAG 성능 향상 시키는 방법](./contents/%EC%A7%80%EC%8B%9D_%EC%A6%9D%EA%B0%95_%EC%83%9D%EC%84%B1_%EB%AA%A8%EB%8D%B8_%EC%84%B1%EB%8A%A5_%ED%96%A5%EC%83%81.md)
+
+- [RAG의 Sentence Window Retrieval 의 장단점](./contents/RAG%EC%9D%98_Sentence_Window_Retrieval_%EB%B0%A9%EB%B2%95.md)
+
+- [RAG의 성능향상 기법중 Query Rewriting는 무엇인가요? 상세한 구현 방법에 대해 알려주세요.](./contents/%EC%A7%88%EB%AC%B8%EC%9D%98_%EC%A3%BC%EC%A0%9C_Query_Rewriting_%EA%B8%B0%EB%B2%95_%EC%84%A4%EB%AA%85.md)
+
+- [RAG기법중에 Hyde의 특징 및 구현방법](./contents/RAG_%EA%B8%B0%EB%B2%95_%EC%A4%91_Hyde%EC%9D%98_%ED%8A%B9%EC%A7%95%EA%B3%BC_%EA%B5%AC%ED%98%84.md)
+
+- [StepBack prompt은 무엇인가요?](./contents/StepBack_prompt%EC%9D%98_%EC%A3%BC%EC%A0%9C_%EC%96%B8%EC%96%B4%EB%AA%A8%EB%8D%B8_%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8_%EA%B8%B0%EB%B2%95.md)
+  
+- [VPC와 VPC를 안전하게 연결하는 방법과, 연결이 잘되었는지 확인하는 방법에 대해 설명해주세요.](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8.md)
+
+- [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](./contents/Cloud_security_monitoring_and_threat_detection.md)
+
+- [AWS에서 생성형 AI로 Agent를 만들때의 장점/단점과 구현방법에 대해 상세히 설명해주세요. 특히 다른 AWS 서비스와 연동하는 방법과 이점에 대해 기술해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/AWS%EC%97%90%EC%84%9C_%EC%83%9D%EC%84%B1%ED%98%95_AI_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EA%B5%AC%EC%B6%95.md)
+
+- [AWS의 생성형 AI 서비스에서 데이터를 수집하는 방법](./contents/AWS_AI_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%88%98%EC%A7%91_%EB%B0%A9%EB%B2%95.md)
+
+- [AWS에서 ERP를 Cloud로 구축하는 방법](./contents/Deploying_ERP_on_AWS_Cloud.md)
+
+- [Apache, MIT 와 같은 라이선스에 대해 설명해줘](./contents/%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4_%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4_%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4_%EC%A2%85%EB%A5%98%EC%99%80_%EC%A1%B0%EA%B1%B4.md)
+
+- [Bedrock agent에 대해 설명해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/%EB%B2%A0%EB%93%9C%EB%A1%9D_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%8A%94_%EA%B0%95%ED%99%94%ED%95%99%EC%8A%B5_%EA%B8%B0%EB%B0%98_AI_%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%9E%85%EB%8B%88%EB%8B%A4.md)
+
+- [우주 여행을하면서 우주인을 만나는 여행에 대한 얘기를 해주세요. 여행지는 목성, 금성, 토성 입니다. 각 여행지에는 특별한 형태와 성격이 다양한 외계인이 있어요. 이들은 성경이 좋기도하고 괴팍하기도 하고 항상 슬프거나 즐겁기도 합니다. 각 별의 외계인의 성격은 마음껏 상상해도 됩니다. 우리는 이들과 우정을 쌓으면서 여행을 하게 되고 마지막에는 지구로 함께 돌아와 재미있게 놀 예정이에요.](./contents/Meeting_aliens_on_space_travel..md)
+
+- [판타지 소설을 써줘. 간달프의 젋은 시절이 배경으로 그의 로멘스가 중심이 되었으면 좋겠어. 그는 뉴욕에 살명서 한국여자를 사랑하게 돼. 그래서 서울에 와서 즐거운 모험을 하는데 갑자기 제주에 팬션을 열었어. 거기서 이효리랑 친구가 되어서 나중에는 보이그룹으로 데뷰를 하고 이후에 일본에 가서 본격적인 활동을하는 내용이야.](./contents/%EA%B0%84%EB%8B%AC%ED%94%84%EC%9D%98_%EB%A1%9C%EB%A7%A8%ED%8B%B1_%EB%AA%A8%ED%97%98%EA%B3%BC_%EC%95%84%EC%9D%B4%EB%8F%8C_%ED%99%9C%EB%8F%99.md)
+
+
+## 병렬처리 방법 (Map Reduce) 검토 현황
 
 [Map Reduce 방식의 병렬처리](https://github.com/kyopark2014/langgraph-agent/blob/main/map-reduce-parallel-processing.md)와 같이 [langgraph의 Send API](https://langchain-ai.github.io/langgraph/concepts/low_level/#send)를 이용하여 병렬처리 할 수 있습니다.
+
+하지만, 아래와 같이 구현후에 revise_answer로 empty state가 지속적으로 전달되어서 정상적인 처리를 할 수 없었습니다. 현상으로 보아서 LangGraph 이슈로 보여져서 현상태에서는 노드에서 병령처리를하고 Map Reduce 방식은 잠정 사용하지 않을것을 추천드립니다.
+
+
 
 <img src="./chart/parallel_case2.png" width="800">
 
@@ -958,85 +1039,4 @@ def save_answer(state: State):
 ### Map reduce로 병렬처리시 이슈사항
 
 revise_answer 노드로 전달된 state에 empty가 있는 경우가 간혈적으로 발생하였습니다. 따라서, 예외처리를 하였지만 Send API에 문제가 있는것으로 의심됩니다.
-
-## 직접 실습 해보기
-
-### 사전 준비 사항
-
-이 솔루션을 사용하기 위해서는 사전에 아래와 같은 준비가 되어야 합니다.
-
-- [AWS Account 생성](https://repost.aws/ko/knowledge-center/create-and-activate-aws-account)
-
-
-
-### CDK를 이용한 인프라 설치
-[인프라 설치](./deployment.md)에 따라 CDK로 인프라 설치를 진행합니다. 
-
-
-### 실행 방법
-
-1) 설치가 끝나면 WebClient에 접속합니다. 아래와 같이 [User Id]에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다
-2) [Parallel Processing]을 "Enable"로 설정하면 병렬처리를 통해 속도를 향상시킬 수 있습니다.
-3) Knowledge base로 RAG를 구성하였다면, [RAG]을 "Enable"로 설정합니다.
-4) 실행 메뉴에서 아래와 같이 "Long from writing"을 선택합니다. 
-
-![image](https://github.com/user-attachments/assets/4bc110eb-6e98-45de-a3dc-ddf48c59d0ea)
-
-
-### 실행 결과
-
-"VPC와 VPC를 안전하게 연결하고 연결후 동작을 확인하는 방법"이라고 입력하면 아래와 같은 결과를 얻을 수 있습니다.
-
-![image](https://github.com/user-attachments/assets/4ac97942-4db8-4cb5-bd06-d0a4a6a4633e)
-
-하단의 [미리보기 링크]을 선택하면 [markdown 파일](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8.md)의 내용을 아래와 같이 확인할 수 있습니다.
-
-![image](https://github.com/user-attachments/assets/14fbb094-21ba-4d92-931f-423d5f6f4872)
-
-이때의 동작은 아래와 같이 LangSmith에서 확인할 수 있습니다. 여기에서는 결과를 얻기까지 약140초가 소요되었습니다. 
-
-![image](https://github.com/user-attachments/assets/566981f1-ba1b-4219-a6d1-5e36595d4809)
-
-### 결과 예제
-
-- [지방 조직이 분비하는 exosome들이 어떻게 면역체계에 역할을 하고 어떻게 하면 좋은 exosome들을 분비시켜 당뇨나 병을 예방할수 있는지 알려주세요.](./contents/Exosomes_from_fat_tissue_regulate_immunity.md)
-
-- [Exosomes secreted by fat tissue play a role in the immune system. Please explain how they can help prevent diabetes or disease by promoting the secretion of beneficial exosomes.](./contents/Exosomes_from_fat_tissue_and_immune_modulation.md)
-
-- [adipocyte cells (3T3L1)과 macrophages co-culutre 실험을 어떻게 design할수 있을까 ?](./contents/Co-culturing_adipocytes_and_macrophages.md)
-
-- [Python으로 생성한 텍스트 파일을 열었을때 한글이 깨지는 경우에 대한 대응방법](./contents/Text_file_encoding_issue_in_Python.md)
-
-- [Parent Child Retrieval 로 RAG 성능 향상 시키는 방법](./contents/%EC%A7%80%EC%8B%9D_%EC%A6%9D%EA%B0%95_%EC%83%9D%EC%84%B1_%EB%AA%A8%EB%8D%B8_%EC%84%B1%EB%8A%A5_%ED%96%A5%EC%83%81.md)
-
-- [RAG의 Sentence Window Retrieval 의 장단점](./contents/RAG%EC%9D%98_Sentence_Window_Retrieval_%EB%B0%A9%EB%B2%95.md)
-
-- [RAG의 성능향상 기법중 Query Rewriting는 무엇인가요? 상세한 구현 방법에 대해 알려주세요.](./contents/%EC%A7%88%EB%AC%B8%EC%9D%98_%EC%A3%BC%EC%A0%9C_Query_Rewriting_%EA%B8%B0%EB%B2%95_%EC%84%A4%EB%AA%85.md)
-
-- [RAG기법중에 Hyde의 특징 및 구현방법](./contents/RAG_%EA%B8%B0%EB%B2%95_%EC%A4%91_Hyde%EC%9D%98_%ED%8A%B9%EC%A7%95%EA%B3%BC_%EA%B5%AC%ED%98%84.md)
-
-- [StepBack prompt은 무엇인가요?](./contents/StepBack_prompt%EC%9D%98_%EC%A3%BC%EC%A0%9C_%EC%96%B8%EC%96%B4%EB%AA%A8%EB%8D%B8_%ED%94%84%EB%A1%AC%ED%94%84%ED%8A%B8_%EA%B8%B0%EB%B2%95.md)
-  
-- [VPC와 VPC를 안전하게 연결하는 방법과, 연결이 잘되었는지 확인하는 방법에 대해 설명해주세요.](./contents/VPC_%EA%B0%84_%EC%95%88%EC%A0%84%ED%95%9C_%EC%97%B0%EA%B2%B0_%EB%B0%8F_%ED%99%95%EC%9D%B8.md)
-
-- [AWS Security Hub, Amazon GuardDuty와 Azure Sentinel을 비교해주세요. AWS 서비스가 Azure Sentinel 대비 강점도 자세히 알려주세요.](./contents/Cloud_security_monitoring_and_threat_detection.md)
-
-- [AWS에서 생성형 AI로 Agent를 만들때의 장점/단점과 구현방법에 대해 상세히 설명해주세요. 특히 다른 AWS 서비스와 연동하는 방법과 이점에 대해 기술해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/AWS%EC%97%90%EC%84%9C_%EC%83%9D%EC%84%B1%ED%98%95_AI_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EA%B5%AC%EC%B6%95.md)
-
-- [AWS의 생성형 AI 서비스에서 데이터를 수집하는 방법](./contents/AWS_AI_%EB%8D%B0%EC%9D%B4%ED%84%B0_%EC%88%98%EC%A7%91_%EB%B0%A9%EB%B2%95.md)
-
-- [AWS에서 ERP를 Cloud로 구축하는 방법](./contents/Deploying_ERP_on_AWS_Cloud.md)
-
-- [Apache, MIT 와 같은 라이선스에 대해 설명해줘](./contents/%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4_%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4_%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4_%EC%A2%85%EB%A5%98%EC%99%80_%EC%A1%B0%EA%B1%B4.md)
-
-- [Bedrock agent에 대해 설명해주세요.](https://github.com/kyopark2014/writing-agent/blob/main/contents/%EB%B2%A0%EB%93%9C%EB%A1%9D_%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8%EB%8A%94_%EA%B0%95%ED%99%94%ED%95%99%EC%8A%B5_%EA%B8%B0%EB%B0%98_AI_%EC%8B%9C%EC%8A%A4%ED%85%9C%EC%9E%85%EB%8B%88%EB%8B%A4.md)
-
-- [우주 여행을하면서 우주인을 만나는 여행에 대한 얘기를 해주세요. 여행지는 목성, 금성, 토성 입니다. 각 여행지에는 특별한 형태와 성격이 다양한 외계인이 있어요. 이들은 성경이 좋기도하고 괴팍하기도 하고 항상 슬프거나 즐겁기도 합니다. 각 별의 외계인의 성격은 마음껏 상상해도 됩니다. 우리는 이들과 우정을 쌓으면서 여행을 하게 되고 마지막에는 지구로 함께 돌아와 재미있게 놀 예정이에요.](./contents/Meeting_aliens_on_space_travel..md)
-
-- [판타지 소설을 써줘. 간달프의 젋은 시절이 배경으로 그의 로멘스가 중심이 되었으면 좋겠어. 그는 뉴욕에 살명서 한국여자를 사랑하게 돼. 그래서 서울에 와서 즐거운 모험을 하는데 갑자기 제주에 팬션을 열었어. 거기서 이효리랑 친구가 되어서 나중에는 보이그룹으로 데뷰를 하고 이후에 일본에 가서 본격적인 활동을하는 내용이야.](./contents/%EA%B0%84%EB%8B%AC%ED%94%84%EC%9D%98_%EB%A1%9C%EB%A7%A8%ED%8B%B1_%EB%AA%A8%ED%97%98%EA%B3%BC_%EC%95%84%EC%9D%B4%EB%8F%8C_%ED%99%9C%EB%8F%99.md)
-
-
-
-  
-
 
