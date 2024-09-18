@@ -1036,7 +1036,3 @@ def save_answer(state: State):
     }
 ```
 
-### Map reduce로 병렬처리시 이슈사항
-
-revise_answer 노드로 전달된 state에 empty가 있는 경우가 간혈적으로 발생하였습니다. 따라서, 예외처리를 하였지만 Send API에 문제가 있는것으로 의심됩니다.
-
