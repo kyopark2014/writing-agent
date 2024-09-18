@@ -45,17 +45,17 @@ def buildLongFormWriting():
     workflow = StateGraph(State)
 
     # Add nodes
-    workflow.add_node("planning_node", plan_node)
+    workflow.add_node("plan_node", plan_node)
     workflow.add_node("execute_node", execute_node)
-    workflow.add_node("revising_node", revise_answer)
+    workflow.add_node("revise_answers", revise_answers)
 
     # Set entry point
     workflow.set_entry_point("planning_node")
 
     # Add edges
-    workflow.add_edge("planning_node", "execute_node")
-    workflow.add_edge("execute_node", "revising_node")
-    workflow.add_edge("revising_node", END)
+    workflow.add_edge("plan_node", "execute_node")
+    workflow.add_edge("execute_node", "revise_answers")
+    workflow.add_edge("revise_answers", END)
         
     return workflow.compile()
 ```
@@ -296,7 +296,7 @@ def execute_node(state: State):
 Execute 노드에서 작성된 각 단락은 초안(draft)이므로 여기에서는 reflection 패턴을 통해 작성된 문단을 향상시킵니다. 작성된 글은 html로 변환하여 Amazon S3에 저장후, 직접 markdown형태로 공유하거나, 별도로 다운로드하여 블로그나 github을 통해 공유 될 수 있습니다. 
 
 ```python
-def revise_answer(state: State):
+def revise_answers(state: State):
     print("###### revise ######")
     drafts = state["drafts"]        
         
@@ -435,7 +435,7 @@ def markdown_to_html(body):
 
 일반적인 사람들의 글쓰기처럼, 초안 작성후 지속적인 수정을 통해 글의 품질을 향상시킬 수 있습니다. 이러한 글쓰기에서 사람들은 다른 도서나, 인터넷등을 찾아서 참조함으로써 글의 완성도를 높일 수 있습니다. 
 
-Revise node에서는 drafts를 각각 reflect node에서 reflections을 추출합니다. 또한 이때 최대 3개의 search_queries도 함께 추출하여 검색을 통해 contents를 수집합니다. reflection과 search_queries에 대한 contents를 이용하여 revise_answer에서는 질문을 업데이트합니다. 
+Revise node에서는 drafts를 각각 reflect node에서 reflections을 추출합니다. 또한 이때 최대 3개의 search_queries도 함께 추출하여 검색을 통해 contents를 수집합니다. reflection과 search_queries에 대한 contents를 이용하여 revise_answers에서는 질문을 업데이트합니다. 
 
 ![image](https://github.com/user-attachments/assets/be4efa7d-8e93-419e-a46c-2c0eb9f41400)
 
@@ -545,7 +545,7 @@ Reflect 노드에서 추출된 reflection과 추가 검색으로 얻어진 conte
 
 ```python
 def revise_draft(state: ReflectionState):   
-    print("###### revise_answer ######")
+    print("###### revise_draft ######")
         
     draft = state['draft']
     search_queries = state['search_queries']
