@@ -1422,7 +1422,16 @@ def continue_to_revise(state: State):
     print('###### continue_to_revise ######')
     print('state (continue_to_revise): ', state)
     
-    return [Send("revise_node", {"draft": s}) for s in state["drafts"]]
+    revise_request = []
+    for draft in state["drafts"]:
+        print('draft: ', draft)
+        
+        if draft:
+            revise_request.append(Send("revise_node", {"draft": draft}))
+    
+    print('revise_request: ', revise_request)
+    
+    return revise_request
 
 class ReviseState(TypedDict):
     draft: str
