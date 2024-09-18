@@ -846,7 +846,7 @@ def retrieve_from_knowledge_base(query):
     return docs
         
 def revise_draft(state: ReflectionState):   
-    print("###### revise_answer ######")
+    print("###### revise_draft ######")
         
     draft = state['draft']
     search_queries = state['search_queries']
@@ -1307,7 +1307,7 @@ def markdown_to_html(body):
     return html
 
 def revise_answers(state: State):
-    print("###### revise ######")
+    print("###### revise_answers ######")
     drafts = state["drafts"]        
     print('drafts: ', drafts)
         
@@ -1383,15 +1383,15 @@ def buildLongFormWriting():
     # Add nodes
     workflow.add_node("plan_node", plan_node)
     workflow.add_node("execute_node", execute_node)
-    workflow.add_node("revise_answer", revise_answers)
+    workflow.add_node("revise_answers", revise_answers)
 
     # Set entry point
     workflow.set_entry_point("plan_node")
 
     # Add edges
     workflow.add_edge("plan_node", "execute_node")
-    workflow.add_edge("execute_node", "revise_answer")
-    workflow.add_edge("revise_answer", END)
+    workflow.add_edge("execute_node", "revise_answers")
+    workflow.add_edge("revise_answers", END)
         
     return workflow.compile()
 
@@ -1425,7 +1425,9 @@ class ReviseState(TypedDict):
     draft: str
     
 def revise_answer(state: ReviseState):
-    print("###### revise ######")
+    print("###### revise_answer ######")
+    print('state (revise_answer): ', state)
+    
     draft = state["draft"]        
     print('draft: ', draft)
         
@@ -1439,9 +1441,10 @@ def revise_answer(state: ReviseState):
         "max_revisions": 1
     }
     output = reflection_app.invoke(inputs, config)
-    print('output (revise_answer): ', output)
+    # print('output (revise_answer): ', output)
                 
     revised_draft = output['revised_draft']
+    print('revised_draft: ', revised_draft)
         
     return {
         "revised_drafts": revised_draft
@@ -1512,6 +1515,7 @@ def buildLongFormWritingParallel():
     # Add nodes
     workflow.add_node("plan_node", plan_node)
     workflow.add_node("execute_node", execute_node)
+    workflow.add_node("revise_answer", revise_answer)
     workflow.add_node("save_answer", save_answer)
     
     # Set entry point
@@ -1522,8 +1526,6 @@ def buildLongFormWritingParallel():
         continue_to_revise, 
         ["revise_answer"]
     )
-    
-    workflow.add_node("revise_answer", revise_answer)
     
     # Add edges
     workflow.add_edge("plan_node", "execute_node")
