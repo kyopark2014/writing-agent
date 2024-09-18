@@ -1441,18 +1441,10 @@ class ReviseState(TypedDict):
     idx: int
     
 def revise_node(state: ReviseState):
-    if state is None:
-        print("No draft provided")
-        print('state: ', state)        
-        raise Exception("state is None")
-    
-    if not "idx" in state:
-        print('error state of idx: ', state)
-        
-        return {
-            "revised_drafts": "error"
-        }
-        # raise Exception("idx is None: ", state)
+    if not "idx" or not "draft" in state:
+        print("state is None")
+        print(state)        
+        return 
     
     print(f"###### revise_node {state['idx']} ######")
     print(f"revise_node --> draft[{state['idx']}]: {state['draft']}")    
