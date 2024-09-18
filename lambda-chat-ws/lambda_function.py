@@ -1441,32 +1441,31 @@ class ReviseState(TypedDict):
     idx: int
     
 def revise_node(state: ReviseState):
-    print("###### revise_node ######")
+    if state is None:
+        print("No draft provided")
+        print('state: ', state)        
+        raise Exception("state is None")
+    
+    print(f"###### revise_node {state['idx']} ######")
     print(f"revise_node: {state['idx']}, {state['draft']}")    
     
-    revised_draft = ""
-    if "draft" in state:        
-        draft = state["draft"]        
-        print('draft: ', draft)
+    draft = state["draft"]        
+    print('draft: ', draft)
             
-        reflection_app = buildReflection()
+    reflection_app = buildReflection()
                     
-        inputs = {
-            "draft": draft
-        }    
-        config = {
-            "recursion_limit": 50,
-            "max_revisions": 1
-        }
-        output = reflection_app.invoke(inputs, config)
-        # print('output (revise_node): ', output)
+    inputs = {
+        "draft": draft
+    }    
+    config = {
+        "recursion_limit": 50,
+        "max_revisions": 1
+    }
+    output = reflection_app.invoke(inputs, config)
+    # print('output (revise_node): ', output)
                     
-        revised_draft = output['revised_draft']
-        print('revised_draft (revise_node): ', revised_draft)
-    else:  # for empty state
-        print("No draft provided")
-        print('state: ', state)
-        revised_draft = "### No draft provided"
+    revised_draft = output['revised_draft']
+    print('revised_draft (revise_node): ', revised_draft)
         
     return {
         "revised_drafts": revised_draft
