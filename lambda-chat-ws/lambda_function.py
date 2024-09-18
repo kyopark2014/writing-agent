@@ -1415,7 +1415,7 @@ def run_long_form_writing_agent(connectionId, requestId, query):
     return output['final_doc']
 
 ####################### LangGraph #######################
-# Long form Writing Agent
+# Long form Writing Agent (Map Reduce Parallel)
 #########################################################
 
 def continue_to_revise(state: State):
@@ -1446,7 +1446,7 @@ def revise_answer(state: ReviseState):
     # print('output (revise_answer): ', output)
                 
     revised_draft = output['revised_draft']
-    print('revised_draft: ', revised_draft)
+    print('revised_draft (revise_answer): ', revised_draft)
         
     return {
         "revised_drafts": revised_draft
@@ -1537,7 +1537,7 @@ def buildLongFormWritingParallel():
         
     return workflow.compile()
 
-def run_long_form_writing_agent_parallel(connectionId, requestId, query):    
+def run_long_form_writing_agent_parallel_map_reduce(connectionId, requestId, query):    
     app = buildLongFormWritingParallel()
     
     # Run the workflow
@@ -1550,7 +1550,7 @@ def run_long_form_writing_agent_parallel(connectionId, requestId, query):
     }
     
     output = app.invoke(inputs, config)
-    print('output (run_long_form_writing_agent_parallel): ', output)
+    print('output (run_long_form_writing_agent_parallel_map_reduce): ', output)
     
     return output['final_doc']
                 
@@ -1974,8 +1974,8 @@ def getResponse(connectionId, jsonBody):
                 elif convType == 'long-form-writing-agent':  # long writing
                     msg = run_long_form_writing_agent(connectionId, requestId, text)
 
-                elif convType == 'long-form-writing-agent-parallel':  # long writing (parallel)
-                    msg = run_long_form_writing_agent_parallel(connectionId, requestId, text)
+                elif convType == 'long-form-writing-agent-map-reduce':  # long writing (map reduce)
+                    msg = run_long_form_writing_agent_parallel_map_reduce(connectionId, requestId, text)
 
                 elif convType == "translation":
                     msg = translate_text(chat, text) 

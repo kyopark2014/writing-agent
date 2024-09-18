@@ -31,20 +31,36 @@ LAYOUT_WITH_LEGEND()
 'System(END, "END")
 
 Container(plan_node, "plan_node")
+
 Container(execute_node, "execute_node")
-Container(revise_answer, "revise_answer")
+
+Boundary(c1, "") {
+    Container(revise_answer1, "revise_answer")
+    Container(revise_answer2, "revise_answer")
+    Container(revise_answer3, "revise_answer")
+    Container(revise_answer4, "revise_answer")
+}
+
+Container(save_answer, "save_answer")
 
 Rel(Start, plan_node, "instruction")
 
-'Boundary(c1, "tools_condition") {
-    'SystemQueue_Ext(should_continue, "should_continue\n(revision_number<max_revisions)")
-'}
+SystemQueue_Ext(continue_to_revise, "continue_to_revise")
 
 Rel(plan_node, execute_node, "plans")
 
-Rel(execute_node, revise_answer, "drafts")
+Rel(execute_node, continue_to_revise, "drafts")
 
-Rel(revise_answer, END, "revised_drafts")
+Rel(continue_to_revise, revise_answer1, "draft")
+Rel(continue_to_revise, revise_answer2, "draft")
+Rel(continue_to_revise, revise_answer3, "draft")
+Rel(continue_to_revise, revise_answer4, "draft")
 
+Rel(revise_answer1, save_answer, "revised_draft")
+Rel(revise_answer2, save_answer, "revised_draft")
+Rel(revise_answer3, save_answer, "revised_draft")
+Rel(revise_answer4, save_answer, "revised_draft")
+
+Rel(save_answer, END, "revised_drafts")
 
 @enduml
