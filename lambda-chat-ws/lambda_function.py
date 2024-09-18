@@ -28,6 +28,7 @@ from pydantic.v1 import BaseModel, Field
 from typing import Annotated, List, Tuple, TypedDict, Literal, Sequence, Union
 from langchain_aws import AmazonKnowledgeBasesRetriever
 from tavily import TavilyClient  
+from langgraph.constants import Send
 
 s3 = boto3.client('s3')
 s3_bucket = os.environ.get('s3_bucket') # bucket name
@@ -1305,7 +1306,7 @@ def markdown_to_html(body):
 </html>"""        
     return html
 
-def revise_answer(state: State):
+def revise_answers(state: State):
     print("###### revise ######")
     drafts = state["drafts"]        
     print('drafts: ', drafts)
@@ -1380,22 +1381,157 @@ def buildLongFormWriting():
     workflow = StateGraph(State)
 
     # Add nodes
-    workflow.add_node("planning_node", plan_node)
+    workflow.add_node("plan_node", plan_node)
     workflow.add_node("execute_node", execute_node)
-    workflow.add_node("revising_node", revise_answer)
+    workflow.add_node("revise_answer", revise_answers)
 
     # Set entry point
-    workflow.set_entry_point("planning_node")
+    workflow.set_entry_point("plan_node")
 
     # Add edges
-    workflow.add_edge("planning_node", "execute_node")
-    workflow.add_edge("execute_node", "revising_node")
-    workflow.add_edge("revising_node", END)
+    workflow.add_edge("plan_node", "execute_node")
+    workflow.add_edge("execute_node", "revise_answer")
+    workflow.add_edge("revise_answer", END)
         
     return workflow.compile()
 
 def run_long_form_writing_agent(connectionId, requestId, query):    
     app = buildLongFormWriting()
+    
+    # Run the workflow
+    isTyping(connectionId, requestId)        
+    inputs = {
+        "instruction": query
+    }    
+    config = {
+        "recursion_limit": 50
+    }
+    
+    output = app.invoke(inputs, config)
+    print('output: ', output)
+    
+    return output['final_doc']
+
+####################### LangGraph #######################
+# Long form Writing Agent
+#########################################################
+
+def continue_to_revise(state: State):
+    return [Send("revise_answer", {"draft": s}) for s in state["drafts"]]
+
+class ReviseState(TypedDict):
+    draft: str
+    
+def revise_answer(state: ReviseState):
+    print("###### revise ######")
+    draft = state["draft"]        
+    print('draft: ', draft)
+        
+    reflection_app = buildReflection()
+                
+    inputs = {
+        "draft": draft
+    }    
+    config = {
+        "recursion_limit": 50,
+        "max_revisions": 1
+    }
+    output = reflection_app.invoke(inputs, config)
+    print('output: ', output)
+                
+    revised_draft = output['revised_draft']
+        
+    return {
+        "revised_drafts": revised_draft
+    }
+    
+def save_answer(state: State):
+    print("###### save ######")
+    revised_drafts = state["revised_drafts"]        
+    print('revised_drafts: ', revised_drafts)
+    
+    instruction = state['instruction']
+    print('instruction: ', instruction)
+        
+    final_doc = ""
+    for idx, revised_draft in enumerate(revised_drafts):
+        final_doc += revised_draft + '\n\n'
+
+    subject = get_subject(instruction)
+    subject = subject.replace(" ","_")
+    subject = subject.replace("?","")
+    subject = subject.replace("!","")
+    subject = subject.replace(".","")
+    subject = subject.replace(":","")
+        
+    # markdown file
+    markdown_key = 'markdown/'+f"{subject}.md"
+    # print('markdown_key: ', markdown_key)
+        
+    markdown_body = f"## {instruction}\n\n"+final_doc
+                
+    s3_client = boto3.client('s3')  
+    response = s3_client.put_object(
+        Bucket=s3_bucket,
+        Key=markdown_key,
+        ContentType='text/markdown',
+        Body=markdown_body.encode('utf-8')
+    )
+    # print('response: ', response)
+        
+    markdown_url = f"{path}{markdown_key}"
+    print('markdown_url: ', markdown_url)
+        
+    # html file
+    html_key = 'markdown/'+f"{subject}.html"
+        
+    html_body = markdown_to_html(markdown_body)
+    print('html_body: ', html_body)
+        
+    s3_client = boto3.client('s3')  
+    response = s3_client.put_object(
+        Bucket=s3_bucket,
+        Key=html_key,
+        ContentType='text/html',
+        Body=html_body
+    )
+    # print('response: ', response)
+        
+    html_url = f"{path}{html_key}"
+    print('html_url: ', html_url)
+        
+    return {
+        "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
+    }    
+    
+def buildLongFormWritingParallel():
+    workflow = StateGraph(State)
+
+    # Add nodes
+    workflow.add_node("plan_node", plan_node)
+    workflow.add_node("execute_node", execute_node)
+    
+    # Set entry point
+    workflow.set_entry_point("plan_node")
+        
+    workflow.add_conditional_edges(
+        "execute_node", 
+        continue_to_revise, 
+        ["revise_answer"]
+    )
+    
+    workflow.add_node("revise_answer", revise_answer)
+    
+    # Add edges
+    workflow.add_edge("plan_node", "execute_node")
+    workflow.add_edge("execute_node", "revise_answer")
+    workflow.add_edge("revise_answer", "save_answer")
+    workflow.add_edge("save_answer", END)
+        
+    return workflow.compile()
+
+def run_long_form_writing_agent_parallel(connectionId, requestId, query):    
+    app = buildLongFormWritingParallel()
     
     # Run the workflow
     isTyping(connectionId, requestId)        
@@ -1830,6 +1966,9 @@ def getResponse(connectionId, jsonBody):
 
                 elif convType == 'long-form-writing-agent':  # long writing
                     msg = run_long_form_writing_agent(connectionId, requestId, text)
+
+                elif convType == 'long-form-writing-agent-parallel':  # long writing
+                    msg = run_long_form_writing_agent_parallel(connectionId, requestId, text)
 
                 elif convType == "translation":
                     msg = translate_text(chat, text) 
