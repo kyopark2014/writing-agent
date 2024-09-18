@@ -1442,7 +1442,7 @@ class ReviseState(TypedDict):
     
 def revise_node(state: ReviseState):
     print("###### revise_node ######")
-    print('state (revise_node): ', state)
+    print(f"revise_node: {state['idx']}, {state['draft']}")    
     
     revised_draft = ""
     if "draft" in state:        
