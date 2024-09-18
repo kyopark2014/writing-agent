@@ -1494,7 +1494,7 @@ def save_answer(state: State):
         
     html_body = markdown_to_html(markdown_body)
     print('html_body: ', html_body)
-        
+
     s3_client = boto3.client('s3')  
     response = s3_client.put_object(
         Bucket=s3_bucket,
