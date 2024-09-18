@@ -1510,6 +1510,7 @@ def buildLongFormWritingParallel():
     # Add nodes
     workflow.add_node("plan_node", plan_node)
     workflow.add_node("execute_node", execute_node)
+    workflow.add_node("save_answer", save_answer)
     
     # Set entry point
     workflow.set_entry_point("plan_node")
