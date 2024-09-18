@@ -31,9 +31,10 @@ LangGraph로 Long form writing을 구현하기 위하여 아래와 같은 server
 
 ### 병렬처리 방법 (노드에서 처리)
 
-여기서는 노드에서 Python의 [multiprocessing](https://docs.python.org/ko/3/library/multiprocessing.html)을 이용해서 병렬처리 하는 방법을 설명합니다. 
+여기서는 노드에서 Python의 [multiprocessing](https://docs.python.org/ko/3/library/multiprocessing.html)을 이용해서 병렬처리를 수행하였습니다.
 
-<img width="706" alt="image" src="https://github.com/user-attachments/assets/6fe65b1b-a591-4eae-af28-4b5d028774c5">
+<img src="./chart/parallel_case1.png" width="800">
+
 
 여기서 좌측의 Plan and Execute 워크플로우는 아래와 같이 정의합니다.
 
@@ -97,12 +98,6 @@ def buildReflection():
         
     return workflow.compile()
 ```
-
-### 병렬처리 방법 (Map Reduce)
-
-[Map Reduce 방식의 병렬처리](https://github.com/kyopark2014/langgraph-agent/blob/main/map-reduce-parallel-processing.md)와 같이 [langgraph의 Send API](https://langchain-ai.github.io/langgraph/concepts/low_level/#send)를 이용하여 병렬처리 할 수 있습니다.
-
-
 
 ## Plan and Execute
 
@@ -817,6 +812,17 @@ def should_continue(state: ReflectionState, config):
 ### RAG 사용
 
 여기에서는 Amazon Bedrock의 완전관리형 RAG 서비스인 Knowledge Base를 이용하고 있습니다. Knowledge Base는 Amazon S3에 파일을 올리거나, web crawler를 이용해 하위 URL까지 문서를 가져올 수 있어서 편리합니다. 설치하는 방법은 [Knowledge Base로 Advanced RAG 구현](https://github.com/kyopark2014/korean-chatbot-using-amazon-bedrock/blob/main/knowledge-base.md)을 참조합니다. 
+
+
+## 병렬처리 방법 (Map Reduce) 
+
+[Map Reduce 방식의 병렬처리](https://github.com/kyopark2014/langgraph-agent/blob/main/map-reduce-parallel-processing.md)와 같이 [langgraph의 Send API](https://langchain-ai.github.io/langgraph/concepts/low_level/#send)를 이용하여 병렬처리 할 수 있습니다.
+
+
+<img src="./chart/parallel_case2.png" width="800">
+   
+
+
 
 ## 직접 실습 해보기
 
