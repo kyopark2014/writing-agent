@@ -11,7 +11,7 @@
 2) LLM이 알아서 인터넷 또는 RAG을 검색해서, 충분한 길이를 가지는 글을 작성해주면, blog나 github에 수정없이 바로 올리고 싶은 사람
 3) 결과만 좋다면 5분, 10분 정도는 기다려줄 수 있는 사람
 
-여기서 구현하는 LangGraph 기반의 multi-agent는 사람의 글쓰기 사고 과정을 모방함으로써 한번에 MS Word 기준으로 약 7-11페이지 정도의 글쓰기가 가능합니다. 인터넷과 RAG를 통해 얻어진 결과를 활용하고 markdown 형태로 작성되어 blog나 github에 바로 올릴 수 있으며, html URL 형태로 작성된 문서를 공유할 수 있습니다.
+여기서 구현하는 LangGraph 기반의 multi-agent는 사람의 글쓰기 사고 과정을 모방함으로써 한번에 MS Word 기준으로 약 7-11페이지 정도의 글쓰기가 가능합니다. 인터넷과 RAG를 통해 얻어진 결과를 활용하고 markdown 형태로 작성되어 blog나 github에 바로 올릴 수 있으며, URL로 Markdown 문서를 공유할 수 있습니다.
 
 ## 구현된 Architecture
 
@@ -891,7 +891,7 @@ def should_continue(state: ReflectionState, config):
 - [판타지 소설을 써줘. 간달프의 젋은 시절이 배경으로 그의 로멘스가 중심이 되었으면 좋겠어. 그는 뉴욕에 살명서 한국여자를 사랑하게 돼. 그래서 서울에 와서 즐거운 모험을 하는데 갑자기 제주에 팬션을 열었어. 거기서 이효리랑 친구가 되어서 나중에는 보이그룹으로 데뷰를 하고 이후에 일본에 가서 본격적인 활동을하는 내용이야.](./contents/%EA%B0%84%EB%8B%AC%ED%94%84%EC%9D%98_%EB%A1%9C%EB%A7%A8%ED%8B%B1_%EB%AA%A8%ED%97%98%EA%B3%BC_%EC%95%84%EC%9D%B4%EB%8F%8C_%ED%99%9C%EB%8F%99.md)
 
 
-## 병렬처리 방법 (Map Reduce) 검토 현황
+## 병렬처리 방법 (Map Reduce) 검토 (진행중)
 
 [Map Reduce 방식의 병렬처리](https://github.com/kyopark2014/langgraph-agent/blob/main/map-reduce-parallel-processing.md)와 같이 [langgraph의 Send API](https://langchain-ai.github.io/langgraph/concepts/low_level/#send)를 이용하여 병렬처리 할 수 있습니다.
 
