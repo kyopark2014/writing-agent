@@ -8,6 +8,7 @@ import csv
 import re
 import traceback
 import base64
+import operator
 
 from botocore.config import Config
 from io import BytesIO
@@ -1020,6 +1021,7 @@ class State(TypedDict):
     drafts : List[str]
     final_doc : str
     word_count : int
+    revised_drafts: Annotated[list, operator.add]
             
 def plan_node(state: State):
     print("###### plan ######")
