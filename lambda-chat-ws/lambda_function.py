@@ -1430,30 +1430,35 @@ def revise_answer(state: ReviseState):
     print("###### revise_answer ######")
     print('state (revise_answer): ', state)
     
-    draft = state["draft"]        
-    print('draft: ', draft)
-        
-    reflection_app = buildReflection()
-                
-    inputs = {
-        "draft": draft
-    }    
-    config = {
-        "recursion_limit": 50,
-        "max_revisions": 1
-    }
-    output = reflection_app.invoke(inputs, config)
-    # print('output (revise_answer): ', output)
-                
-    revised_draft = output['revised_draft']
-    print('revised_draft (revise_answer): ', revised_draft)
+    revised_draft = []
+    if "draft" in state:        
+        draft = state["draft"]        
+        print('draft: ', draft)
+            
+        reflection_app = buildReflection()
+                    
+        inputs = {
+            "draft": draft
+        }    
+        config = {
+            "recursion_limit": 50,
+            "max_revisions": 1
+        }
+        output = reflection_app.invoke(inputs, config)
+        # print('output (revise_answer): ', output)
+                    
+        revised_draft = output['revised_draft']
+        print('revised_draft (revise_answer): ', revised_draft)
+    else:
+        print("No draft provided")
+        print('state: ', state)
         
     return {
         "revised_drafts": revised_draft
     }
     
 def save_answer(state: State):
-    print("###### save ######")
+    print("###### save_answer ######")
     revised_drafts = state["revised_drafts"]        
     print('revised_drafts: ', revised_drafts)
     
@@ -1511,7 +1516,7 @@ def save_answer(state: State):
         "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
     }    
     
-def buildLongFormWritingParallel():
+def buildLongFormWritingMapReduce():
     workflow = StateGraph(State)
 
     # Add nodes
@@ -1537,8 +1542,8 @@ def buildLongFormWritingParallel():
         
     return workflow.compile()
 
-def run_long_form_writing_agent_parallel_map_reduce(connectionId, requestId, query):    
-    app = buildLongFormWritingParallel()
+def run_long_form_writing_agent_map_reduce(connectionId, requestId, query):    
+    app = buildLongFormWritingMapReduce()
     
     # Run the workflow
     isTyping(connectionId, requestId)        
@@ -1550,7 +1555,7 @@ def run_long_form_writing_agent_parallel_map_reduce(connectionId, requestId, que
     }
     
     output = app.invoke(inputs, config)
-    print('output (run_long_form_writing_agent_parallel_map_reduce): ', output)
+    print('output (run_long_form_writing_agent_map_reduce): ', output)
     
     return output['final_doc']
                 
@@ -1975,7 +1980,7 @@ def getResponse(connectionId, jsonBody):
                     msg = run_long_form_writing_agent(connectionId, requestId, text)
 
                 elif convType == 'long-form-writing-agent-map-reduce':  # long writing (map reduce)
-                    msg = run_long_form_writing_agent_parallel_map_reduce(connectionId, requestId, text)
+                    msg = run_long_form_writing_agent_map_reduce(connectionId, requestId, text)
 
                 elif convType == "translation":
                     msg = translate_text(chat, text) 
