@@ -1967,7 +1967,7 @@ def getResponse(connectionId, jsonBody):
                 elif convType == 'long-form-writing-agent':  # long writing
                     msg = run_long_form_writing_agent(connectionId, requestId, text)
 
-                elif convType == 'long-form-writing-agent-parallel':  # long writing
+                elif convType == 'long-form-writing-agent-parallel':  # long writing (parallel)
                     msg = run_long_form_writing_agent_parallel(connectionId, requestId, text)
 
                 elif convType == "translation":
