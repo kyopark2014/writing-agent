@@ -1415,7 +1415,7 @@ def run_long_form_writing_agent(connectionId, requestId, query):
     return output['final_doc']
 
 ####################### LangGraph #######################
-# Long form Writing Agent (Map Reduce Parallel)
+# Long form Writing Agent (Map Reduce Parallel) <-- Not recommended, sometimes it give a empty response.
 #########################################################
 
 def continue_to_revise(state: State):
