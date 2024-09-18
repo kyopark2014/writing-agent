@@ -1447,8 +1447,8 @@ def revise_node(state: ReviseState):
         raise Exception("state is None")
     
     if not "idx" in state:
-        print('state: ', state)        
-        raise Exception("idx is None")    
+        print('error state of idx: ', state)        
+        raise Exception("idx is None: "+state)
     
     print(f"###### revise_node {state['idx']} ######")
     print(f"revise_node: {state['idx']}, {state['draft']}")    
