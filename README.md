@@ -362,7 +362,7 @@ def revise_answers(state: State):
     }
 ```
 
-작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도로고 markdown 형태를 이용하였습니다. 아래 작성된 초안(draft)과 같이 markdown 형태는 문단이 "###"으로 구분됩니다. 
+작성된 문장은 블로그나 인터넷에 쉽게 올릴수 있도록 markdown 형태를 이용하였습니다. 아래 작성된 초안(draft)과 같이 markdown 형태는 문단이 "###"으로 구분됩니다. 
 
 ```text
 ### VPC(Virtual Private Cloud)란?
