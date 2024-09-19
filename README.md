@@ -895,3 +895,5 @@ def should_continue(state: ReflectionState, config):
 - [AWS Storage중 Object 방식의 특징](./contents/%EA%B0%9D%EC%B2%B4_%EA%B8%B0%EB%B0%98_%EC%8A%A4%ED%86%A0%EB%A6%AC%EC%A7%80%EC%9D%98_%ED%8A%B9%EC%A7%95.md)
 
 - [Docker란 무엇인지? 컨테이너와 차이점은?](./contents/Docker%EC%99%80_%EC%BB%A8%ED%85%8C%EC%9D%B4%EB%84%88_%EA%B8%B0%EC%88%A0_%EB%B9%84%EA%B5%90.md)
+
+- [AWS의 MSA Application 배포 방식](./contents/AWS%EC%97%90%EC%84%9C_MSA_%EC%95%A0%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98_%EB%B0%B0%ED%8F%AC.md)
