@@ -158,6 +158,9 @@ def tavily_search(query, k):
             response = tavily_client.search(query, max_results=k)
             # print('tavily response: ', response)
             
+            if "url" in r:
+                url = r.get("url")
+                
             for r in response["results"]:
                 name = r.get("title")
                 if name is None:
@@ -168,7 +171,7 @@ def tavily_search(query, k):
                         page_content=r.get("content"),
                         metadata={
                             'name': name,
-                            'url': r.get("url"),
+                            'url': url,
                             'from': 'tavily'
                         },
                     )
@@ -1326,7 +1329,7 @@ def revise_answers(state: State):
             }    
             config = {
                 "recursion_limit": 50,
-                "max_revisions": 1
+                "max_revisions": MAX_REVISIONS
             }
             output = reflection_app.invoke(inputs, config)
                 
@@ -1415,7 +1418,7 @@ def run_long_form_writing_agent(connectionId, requestId, query):
     return output['final_doc']
 
 ####################### LangGraph #######################
-# Long form Writing Agent (Map Reduce Parallel) <-- Not recommended, sometimes it give a empty response.
+# Long form Writing Agent (Map Reduce Parallel) <-- Not recommended, sometimes it give a empty state by Send() API.
 #########################################################
 
 def continue_to_revise(state: State):
@@ -1458,7 +1461,7 @@ def revise_node(state: ReviseState):
     }    
     config = {
         "recursion_limit": 50,
-        "max_revisions": 1
+        "max_revisions": MAX_REVISIONS
     }
     output = reflection_app.invoke(inputs, config)
     # print('output (revise_node): ', output)
