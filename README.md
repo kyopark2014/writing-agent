@@ -833,9 +833,9 @@ def should_continue(state: ReflectionState, config):
 1) 설치가 끝나면 WebClient에 접속합니다. 아래와 같이 [User Id]에 적절한 이름을 넣습니다. 여기에서는 "demo"로 입력하였습니다
 2) [Parallel Processing]을 "Enable"로 설정하면 병렬처리를 통해 속도를 향상시킬 수 있습니다.
 3) Knowledge base로 RAG를 구성하였다면, [RAG]을 "Enable"로 설정합니다.
-4) 실행 메뉴에서 아래와 같이 "Long from writing"을 선택합니다. 
+4) 실행 메뉴에서 아래와 같이 "Long form writing"을 선택합니다. 
 
-![image](https://github.com/user-attachments/assets/4bc110eb-6e98-45de-a3dc-ddf48c59d0ea)
+<img width="486" alt="image" src="https://github.com/user-attachments/assets/713f601e-a51c-4ab5-9fbb-52b905460fa6">
 
 
 ### 실행 결과
