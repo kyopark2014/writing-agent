@@ -899,3 +899,5 @@ def should_continue(state: ReflectionState, config):
 - [Docker란 무엇인지? 컨테이너와 차이점은?](./contents/Docker%EC%99%80_%EC%BB%A8%ED%85%8C%EC%9D%B4%EB%84%88_%EA%B8%B0%EC%88%A0_%EB%B9%84%EA%B5%90.md)
 
 - [AWS의 MSA Application 배포 방식](./contents/AWS%EC%97%90%EC%84%9C_MSA_%EC%95%A0%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98_%EB%B0%B0%ED%8F%AC.md)
+
+- [Amazon SageMaker의 RStudio은 무엇인가요? 이것으로 할 수 있는일은 무엇인가요?](https://github.com/kyopark2014/writing-agent/blob/main/contents/RStudio_on_Amazon_SageMaker.md)
