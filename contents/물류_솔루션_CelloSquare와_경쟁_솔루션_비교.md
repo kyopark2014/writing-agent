@@ -88,30 +88,22 @@ CelloSquare는 통합 물류 솔루션 시장에서 선도적인 위치를 차�
 다만 CelloSquare도 일부 단점이 있을 수 있습니다. 예를 들어 창고 운영에 따른 재고 비용 발생, 지역성 제약으로 인한 글로벌 물류 한계 등이 있습니다. 또한 대기업 중심의 고객 기반으로 인해 중소기업에게는 비용 부담이 클 수 있습니다. 그러나 전반적으로 CelloSquare는 통합 물류 솔루션 시장에서 강력한 경쟁력을 가지고 있습니다.
 
 
-#### CelloSquare : Plateforme logistique numérique de pointe
+## CelloSquare: 최첨단 디지털 물류 플랫폼
 
-CelloSquare est une plateforme logistique numérique de pointe développée par Samsung SDS. Elle offre une suite complète de solutions pour optimiser les opérations logistiques des entreprises, de la gestion des entrepôts à l'expédition internationale.
+CelloSquare는 삼성SDS에서 개발한 최첨단 디지털 물류 플랫폼입니다. 기업의 물류 운영을 창고 관리에서 국제 배송까지 최적화할 수 있는 완벽한 솔루션 제품군을 제공합니다.
 
-Parmi les principales fonctionnalités de CelloSquare, on trouve :
+CelloSquare의 주요 기능은 다음과 같습니다:
 
-- WMS (Warehouse Management System) : Gestion efficace des entrepôts, des quais, des cours et des portes avec données opérationnelles en temps réel.
+- WMS(창고 관리 시스템): 실시간 운영 데이터를 통해 창고, 도크, 야적장, 문을 효율적으로 관리합니다.
+- TMS(운송 관리 시스템): 운송 계획 및 최적화를 통해 비용을 절감합니다.
+- 경로 최적화 엔진: 운송 시간과 비용을 최소화하는 최적의 경로를 계산합니다.
+- 실시간 가시성: 언제 어디서나 배송 상황과 재고 상태를 추적할 수 있습니다.
+- 데이터 분석: 수요를 예측하기 위한 예측 분석 기능을 제공합니다.
+- 물류 마켓플레이스: 광범위한 운송업체 및 물류 공급업체 네트워크에 액세스할 수 있습니다.
 
-- TMS (Transportation Management System) : Planification et optimisation des transports pour réduire les coûts.
+CelloSquare를 통해 다양한 산업의 많은 기업들이 공급망 효율성을 크게 개선할 수 있었습니다. 성공 사례는 다음과 같습니다:
 
-- Moteur d'optimisation des itinéraires : Calcul des meilleurs itinéraires pour minimiser les temps et coûts de transport.
-
-- Visibilité en temps réel : Suivi des expéditions et état des stocks à tout moment.
-
-- Analyse de données : Fonctions d'analyse prédictive pour anticiper la demande.
-
-- Place de marché logistique : Accès à un vaste réseau de transporteurs et fournisseurs logistiques.
-
-CelloSquare a permis à de nombreuses entreprises de divers secteurs d'activité d'améliorer considérablement l'efficacité de leur chaîne d'approvisionnement. Voici quelques exemples de réussites :
-
-[Insérer les exemples de cas clients existants]
-
-Grâce à son architecture flexible et ses API ouvertes, CelloSquare peut s'intégrer de manière transparente aux systèmes des clients. La plateforme s'adapte aux besoins spécifiques de chaque entreprise pour relever leurs défis logistiques de manière optimale.
-
+유연한 아키텍처와 오픈 API를 통해 CelloSquare는 고객 시스템과 원활하게 통합될 수 있습니다. 이 플랫폼은 각 기업의 특정 요구 사항에 맞춰 최적의 물류 과제를 해결할 수 있도록 조정됩니다. 
 
 #### CelloSquare의 미래 로드맵과 혁신 계획
 
