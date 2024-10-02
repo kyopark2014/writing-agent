@@ -822,7 +822,7 @@ def retrieve_from_knowledge_base(query):
         
         link = ""
         if "s3Location" in document.metadata["location"]:
-            link = document.metadata["location"]["s3Location"]["url"] if document.metadata["location"]["s3Location"]["uri"] is not None else ""
+            link = document.metadata["location"]["s3Location"]["uri"] if document.metadata["location"]["s3Location"]["uri"] is not None else ""
             
             print('link:', link)    
             pos = link.find(f"/{doc_prefix}")
@@ -832,7 +832,7 @@ def retrieve_from_knowledge_base(query):
             link = f"{path}{doc_prefix}{encoded_name}"
             
         elif "webLocation" in document.metadata["location"]:
-            link = document.metadata["location"]["webLocation"]["url"] if document.metadata["location"]["webLocation"]["uri"] is not None else ""
+            link = document.metadata["location"]["webLocation"]["url"] if document.metadata["location"]["webLocation"]["url"] is not None else ""
             name = "Web Crawler"
 
         print('link:', link)                    
