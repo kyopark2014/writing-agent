@@ -1357,7 +1357,7 @@ def revise_answers(state: State):
     )
     # print('response: ', response)
         
-    markdown_url = f"{path}{markdown_key}"
+    markdown_url = f"{path}{parse.quote(markdown_key)}"
     print('markdown_url: ', markdown_url)
         
     # html file
@@ -1375,16 +1375,11 @@ def revise_answers(state: State):
     )
     # print('response: ', response)
         
-    html_url = f"{path}{html_key}"
+    html_url = f"{path}{parse.quote(html_key)}"
     print('html_url: ', html_url)
-    
-    encoded_html_url = parse.quote(html_url)
-    print('encoded html_url: ', encoded_html_url)
-    encoded_markdown_url = parse.quote(markdown_url)
-    print('encoded markdown_url: ', encoded_markdown_url)
         
     return {
-        "final_doc": final_doc+f"\n<a href={encoded_html_url} target=_blank>[미리보기 링크]</a>\n<a href={encoded_markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
+        "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
     }
         
 def buildLongFormWriting():
