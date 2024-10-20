@@ -746,7 +746,7 @@ def reflect_node(state: ReflectionState, config):
     draft = state['draft']
     print('draft: ', draft)
     
-    update_state_message("reflecting...", config)
+    update_state_message("reflecting... (search_queries)", config)
     
     reflection = []
     search_queries = []
@@ -870,7 +870,7 @@ def revise_draft(state: ReflectionState, config):
     print('search_queries: ', search_queries)
     print('reflection: ', reflection)
     
-    update_state_message("revising...", config)
+    update_state_message("reflecting... (retrieve)", config)
         
     if isKorean(draft):
         revise_template = (
@@ -957,7 +957,7 @@ def revise_draft(state: ReflectionState, config):
         if len(docs):
             filtered_docs += grade_documents(q, docs)    
     """
-    
+        
     print('filtered_docs: ', filtered_docs)
               
     content = []   
@@ -966,6 +966,8 @@ def revise_draft(state: ReflectionState, config):
             content.append(d.page_content)
         
     print('content: ', content)
+    
+    update_state_message("reflecting... (generate)", config)
 
     chat = get_chat()
     reflect = revise_prompt | chat
