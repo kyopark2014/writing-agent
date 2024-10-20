@@ -1197,7 +1197,9 @@ def execute_node(state: State, config):
         # print(plan)
         return
         
-    for idx, step in enumerate(planning_steps):
+    for idx, step in enumerate(planning_steps):        
+        update_state_message(f"executing... (draft: {idx}/{len(planning_steps)})", config)
+        
         # Invoke the write_chain
         chat = get_chat()
         write_chain = write_prompt | chat
