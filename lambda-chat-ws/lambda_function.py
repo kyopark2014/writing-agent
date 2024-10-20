@@ -315,7 +315,16 @@ def get_multimodal():
         selected_multimodal = 0
     
     return multimodal
+
+def update_state_message(msg:str, config):
+    print(msg)
+    print('config: ', config)
     
+    requestId = config.get("configurable", {}).get("requestId", "")
+    connection = config.get("configurable", {}).get("connectionId", "")
+    
+    isTyping(connection, requestId, msg)
+        
 # load documents from s3 for pdf and txt
 def load_document(file_type, s3_file_name):
     s3r = boto3.resource("s3")
@@ -481,7 +490,7 @@ def general_conversation(connectionId, requestId, chat, query):
                 
     chain = prompt | chat    
     try: 
-        isTyping(connectionId, requestId)  
+        isTyping(connectionId, requestId, "")  
         stream = chain.invoke(
             {
                 "history": history,
@@ -732,10 +741,12 @@ class ResearchKor(BaseModel):
         description="현재 글과 관련된 3개 이내의 검색어"
     )
     
-def reflect_node(state: ReflectionState):
+def reflect_node(state: ReflectionState, config):
     print("###### reflect ######")
     draft = state['draft']
     print('draft: ', draft)
+    
+    update_state_message("reflecting...", config)
     
     reflection = []
     search_queries = []
@@ -849,7 +860,7 @@ def retrieve_from_knowledge_base(query):
         )
     return docs
         
-def revise_draft(state: ReflectionState):   
+def revise_draft(state: ReflectionState, config):   
     print("###### revise_draft ######")
         
     draft = state['draft']
@@ -858,6 +869,8 @@ def revise_draft(state: ReflectionState):
     print('draft: ', draft)
     print('search_queries: ', search_queries)
     print('reflection: ', reflection)
+    
+    update_state_message("revising...", config)
         
     if isKorean(draft):
         revise_template = (
@@ -1026,10 +1039,12 @@ class State(TypedDict):
     word_count : int
     revised_drafts: Annotated[list, operator.add]
             
-def plan_node(state: State):
+def plan_node(state: State, config):
     print("###### plan ######")
     instruction = state["instruction"]
     print('subject: ', instruction)
+    
+    update_state_message("planning...", config)
         
     if isKorean(instruction):
         planner_template = (
@@ -1094,12 +1109,14 @@ def plan_node(state: State):
         "planning_steps": planning_steps
     }
         
-def execute_node(state: State):
+def execute_node(state: State, config):
     print("###### write (execute) ######")        
     instruction = state["instruction"]
     planning_steps = state["planning_steps"]
     print('instruction: ', instruction)
     print('planning_steps: ', planning_steps)
+    
+    update_state_message("executing...", config)
         
     if isKorean(instruction):
         write_template = (
@@ -1209,14 +1226,10 @@ def execute_node(state: State):
         "drafts": drafts
     }
 
-def reflect_draft(conn, reflection_app, idx, draft):     
+def reflect_draft(conn, reflection_app, config, idx, draft):     
     inputs = {
         "draft": draft
     }    
-    config = {
-        "recursion_limit": 50,
-        "max_revisions": MAX_REVISIONS
-    }
     output = reflection_app.invoke(inputs, config)
         
     result = {
@@ -1227,7 +1240,7 @@ def reflect_draft(conn, reflection_app, idx, draft):
     conn.send(result)    
     conn.close()
         
-def reflect_drafts_using_parallel_processing(drafts):
+def reflect_drafts_using_parallel_processing(drafts, config):
     revised_drafts = drafts
         
     processes = []
@@ -1239,7 +1252,7 @@ def reflect_drafts_using_parallel_processing(drafts):
         parent_conn, child_conn = Pipe()
         parent_connections.append(parent_conn)
             
-        process = Process(target=reflect_draft, args=(child_conn, reflection_app, idx, draft))
+        process = Process(target=reflect_draft, args=(child_conn, reflection_app, config, idx, draft))
         processes.append(process)
             
     for process in processes:
@@ -1311,14 +1324,16 @@ def markdown_to_html(body):
 </html>"""        
     return html
 
-def revise_answers(state: State):
+def revise_answers(state: State, config):
     print("###### revise_answers ######")
     drafts = state["drafts"]        
     print('drafts: ', drafts)
+    
+    update_state_message("revising...", config)
         
     # reflection
     if multi_region == 'enable':  # parallel processing
-        final_doc = reflect_drafts_using_parallel_processing(drafts)
+        final_doc = reflect_drafts_using_parallel_processing(drafts, config)
     else:
         reflection_app = buildReflection()
                 
@@ -1326,11 +1341,7 @@ def revise_answers(state: State):
         for idx, draft in enumerate(drafts):
             inputs = {
                 "draft": draft
-            }    
-            config = {
-                "recursion_limit": 50,
-                "max_revisions": MAX_REVISIONS
-            }
+            }                
             output = reflection_app.invoke(inputs, config)
                 
             final_doc += output['revised_draft'] + '\n\n'
@@ -1404,12 +1415,14 @@ def run_long_form_writing_agent(connectionId, requestId, query):
     app = buildLongFormWriting()
     
     # Run the workflow
-    isTyping(connectionId, requestId)        
+    isTyping(connectionId, requestId, "")        
     inputs = {
         "instruction": query
     }    
     config = {
-        "recursion_limit": 50
+        "recursion_limit": 50,
+        "requestId": requestId,
+        "connectionId": connectionId
     }
     
     output = app.invoke(inputs, config)
@@ -1443,7 +1456,10 @@ class ReviseState(TypedDict):
     draft: str
     idx: int
     
-def revise_node(state: ReviseState):
+def revise_node(state: ReviseState, config):
+    print('###### revise_node ######')
+    update_state_message("revising...", config)
+    
     if not "idx" or not "draft" in state:
         print("state is None")
         print(state)        
@@ -1459,10 +1475,7 @@ def revise_node(state: ReviseState):
     inputs = {
         "draft": draft
     }    
-    config = {
-        "recursion_limit": 50,
-        "max_revisions": MAX_REVISIONS
-    }
+
     output = reflection_app.invoke(inputs, config)
     # print('output (revise_node): ', output)
                     
@@ -1473,10 +1486,12 @@ def revise_node(state: ReviseState):
         "revised_drafts": revised_draft
     }
     
-def save_answer(state: State):
+def save_answer(state: State, config):
     print("###### save_answer ######")
     revised_drafts = state["revised_drafts"]        
     print('revised_drafts: ', revised_drafts)
+    
+    update_state_message("saving...", config)
     
     instruction = state['instruction']
     print('instruction: ', instruction)
@@ -1563,12 +1578,14 @@ def run_long_form_writing_agent_map_reduce(connectionId, requestId, query):
     app = buildLongFormWritingMapReduce()
     
     # Run the workflow
-    isTyping(connectionId, requestId)        
+    isTyping(connectionId, requestId, "")        
     inputs = {
         "instruction": query
     }    
     config = {
-        "recursion_limit": 50
+        "recursion_limit": 50,
+        "requestId": requestId,
+        "connectionId": connectionId
     }
     
     output = app.invoke(inputs, config)
@@ -1676,10 +1693,12 @@ def revise_question(connectionId, requestId, chat, query):
     return revised_question    
     # return revised_question.replace("\n"," ")
 
-def isTyping(connectionId, requestId):    
+def isTyping(connectionId, requestId, msg):    
+    if not msg:
+        msg = "typing a message..."
     msg_proceeding = {
         'request_id': requestId,
-        'msg': 'Proceeding...',
+        'msg': msg,
         'status': 'istyping'
     }
     #print('result: ', json.dumps(result))
@@ -2009,7 +2028,7 @@ def getResponse(connectionId, jsonBody):
                 memory_chain.chat_memory.add_ai_message(msg)
                 
         elif type == 'document':
-            isTyping(connectionId, requestId)
+            isTyping(connectionId, requestId, "")
             
             object = body
             file_type = object[object.rfind('.')+1:len(object)]            
