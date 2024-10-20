@@ -746,7 +746,8 @@ def reflect_node(state: ReflectionState, config):
     draft = state['draft']
     print('draft: ', draft)
     
-    update_state_message(f"reflecting... (search_queries-{config['idx']})", config)
+    idx = config.get("configurable", {}).get("idx")
+    update_state_message(f"reflecting... (search_queries-{idx})", config)
     
     reflection = []
     search_queries = []
@@ -870,7 +871,8 @@ def revise_draft(state: ReflectionState, config):
     print('search_queries: ', search_queries)
     print('reflection: ', reflection)
     
-    update_state_message(f"reflecting... (retrieve-{config['idx']})", config)
+    idx = config.get("configurable", {}).get("idx")
+    update_state_message(f"reflecting... (retrieve-{idx})", config)
         
     if isKorean(draft):
         revise_template = (
@@ -967,7 +969,8 @@ def revise_draft(state: ReflectionState, config):
         
     print('content: ', content)
     
-    update_state_message(f"reflecting... (generate-{config['idx']})", config)
+    idx = config.get("configurable", {}).get("idx")
+    update_state_message(f"reflecting... (generate-{idx})", config)
 
     chat = get_chat()
     reflect = revise_prompt | chat
@@ -1253,7 +1256,9 @@ def reflect_drafts_using_parallel_processing(drafts, config):
     reflection_app = buildReflection()
     
     requestId = config.get("configurable", {}).get("requestId", "")
+    print('requestId: ', requestId)
     connectionId = config.get("configurable", {}).get("connectionId", "")
+    print('connectionId: ', connectionId)
     
     for idx, draft in enumerate(drafts):
         parent_conn, child_conn = Pipe()
@@ -1261,6 +1266,7 @@ def reflect_drafts_using_parallel_processing(drafts, config):
 
         app_config = {
             "recursion_limit": 50,
+            "max_revisions": MAX_REVISIONS,
             "requestId":requestId,
             "connectionId": connectionId,
             "idx": idx
