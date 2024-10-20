@@ -1251,6 +1251,11 @@ def reflect_drafts_using_parallel_processing(drafts, config):
     parent_connections = []
         
     reflection_app = buildReflection()
+    
+    print('==> config: ', config)
+    jsonValue = json.loads(config)
+    requestId = jsonValue['requestId']
+    print('==> requestId: ', requestId)
                 
     for idx, draft in enumerate(drafts):
         parent_conn, child_conn = Pipe()
@@ -1258,8 +1263,8 @@ def reflect_drafts_using_parallel_processing(drafts, config):
 
         app_config = {
             "recursion_limit": 50,
-            "requestId": config['requestId'],
-            "connectionId": config['connectionId'],
+            "requestId": json.loads(config)['requestId'],
+            "connectionId": json.loads(config)['connectionId'],
             "idx": idx
         }
         process = Process(target=reflect_draft, args=(child_conn, reflection_app, app_config, idx, draft))
