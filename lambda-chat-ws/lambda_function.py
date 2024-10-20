@@ -746,7 +746,7 @@ def reflect_node(state: ReflectionState, config):
     draft = state['draft']
     print('draft: ', draft)
     
-    update_state_message("reflecting... (search_queries)", config)
+    update_state_message(f"reflecting... (search_queries-{config['idx']})", config)
     
     reflection = []
     search_queries = []
@@ -870,7 +870,7 @@ def revise_draft(state: ReflectionState, config):
     print('search_queries: ', search_queries)
     print('reflection: ', reflection)
     
-    update_state_message("reflecting... (retrieve)", config)
+    update_state_message(f"reflecting... (retrieve-{config['idx']})", config)
         
     if isKorean(draft):
         revise_template = (
@@ -967,7 +967,7 @@ def revise_draft(state: ReflectionState, config):
         
     print('content: ', content)
     
-    update_state_message("reflecting... (generate)", config)
+    update_state_message(f"reflecting... (generate-{config['idx']})", config)
 
     chat = get_chat()
     reflect = revise_prompt | chat
@@ -1198,7 +1198,7 @@ def execute_node(state: State, config):
         return
         
     for idx, step in enumerate(planning_steps):        
-        update_state_message(f"executing... (draft: {idx}/{len(planning_steps)})", config)
+        update_state_message(f"executing... (step: {idx+1}/{len(planning_steps)})", config)
         
         # Invoke the write_chain
         chat = get_chat()
@@ -1255,8 +1255,14 @@ def reflect_drafts_using_parallel_processing(drafts, config):
     for idx, draft in enumerate(drafts):
         parent_conn, child_conn = Pipe()
         parent_connections.append(parent_conn)
-            
-        process = Process(target=reflect_draft, args=(child_conn, reflection_app, config, idx, draft))
+
+        app_config = {
+            "recursion_limit": 50,
+            "requestId": config['requestId'],
+            "connectionId": config['connectionId'],
+            "idx": idx
+        }
+        process = Process(target=reflect_draft, args=(child_conn, reflection_app, app_config, idx, draft))
         processes.append(process)
             
     for process in processes:
