@@ -158,13 +158,13 @@ def tavily_search(query, k):
             response = tavily_client.search(query, max_results=k)
             # print('tavily response: ', response)
             
-            if "url" in r:
-                url = r.get("url")
-                
             for r in response["results"]:
                 name = r.get("title")
                 if name is None:
                     name = 'WWW'
+            
+                if "url" in r:                    
+                    url = r.get("url")
             
                 docs.append(
                     Document(
@@ -969,7 +969,6 @@ def revise_draft(state: ReflectionState, config):
         
     print('content: ', content)
     
-    idx = config.get("configurable", {}).get("idx")
     update_state_message(f"reflecting... (generate-{idx})", config)
 
     chat = get_chat()
