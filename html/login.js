@@ -51,7 +51,6 @@ else {
 }
 console.log('gradeInput: ', gradeInput.value);
 
-
 // provisioning
 getProvisioningInfo(userId);
 

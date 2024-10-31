@@ -692,9 +692,9 @@ def priority_search(query, relevant_docs, minSimilarity):
 def grade_documents(question, documents):
     print("###### grade_documents ######")
     
-    filtered_docs = []
     print("start grading...")
     print("grade_state: ", grade_state)
+    filtered_docs = []
     
     if grade_state == "LLM":
         if multi_region == 'enable':  # parallel processing
