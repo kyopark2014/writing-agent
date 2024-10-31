@@ -32,14 +32,25 @@ else {
 console.log('multi_region: ', multiRegionInput.value);
 
 const ragInput = document.querySelector('#ragMode');
-let rag_mode = localStorage.getItem('ragMode'); // set conversationType if exists 
+let rag_mode = localStorage.getItem('ragMode'); 
 if(rag_mode != '') {
     ragInput.value = rag_mode;
 }
 else {
-    ragInput.value = "disable"  
+    ragInput.value = "LLM"  
 }
 console.log('ragInput: ', ragInput.value);
+
+const gradeInput = document.querySelector('#gradeMode');
+let grade_mode = localStorage.getItem('gradeMode');
+if(grade_mode != '') {
+    gradeInput.value = rag_mode;
+}
+else {
+    gradeInput.value = "LLM"  
+}
+console.log('gradeInput: ', gradeInput.value);
+
 
 // provisioning
 getProvisioningInfo(userId);
@@ -62,6 +73,9 @@ function onSubmit(e) {
 
     localStorage.setItem('ragMode',ragInput.value);
     console.log('Save config> ragInput:', ragInput.value)
+
+    localStorage.setItem('gradeMode',gradeInput.value);
+    console.log('Save config> gradeInput:', gradeInput.value)
 
     window.location.href = "chat.html";
 }

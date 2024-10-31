@@ -19,6 +19,8 @@ from langchain_core.prompts import MessagesPlaceholder, ChatPromptTemplate
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_aws import ChatBedrock
 from multiprocessing import Process, Pipe
+from langchain_aws import BedrockEmbeddings
+from langchain_community.vectorstores.faiss import FAISS
 
 # from langchain_community.tools.tavily_search import TavilySearchResults
 from PIL import Image
@@ -44,6 +46,9 @@ LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 selected_chat = 0
 selected_multimodal = 0
 useEnhancedSearch = False
+priority_search_embedding = json.loads(os.environ.get('priority_search_embedding'))
+minDocSimilarity = 200
+grade_state = "LLM" # LLM, PRIORITY_SEARCH, OTHERS
 
 knowledge_base_name = os.environ.get('knowledge_base_name')
     
@@ -80,6 +85,21 @@ multi_region_models = [   # claude sonnet 3.0
     }
 ]
 multi_region = 'disable'
+
+titan_embedding_v1 = [  # dimension = 1536
+  {
+    "bedrock_region": "us-west-2", # Oregon
+    "model_type": "titan",
+    "model_id": "amazon.titan-embed-text-v1"
+  },
+  {
+    "bedrock_region": "us-east-1", # N.Virginia
+    "model_type": "titan",
+    "model_id": "amazon.titan-embed-text-v1"
+  }
+]
+priority_search_embedding = titan_embedding_v1
+selected_ps_embedding = 0
 
 reference_docs = []
 
@@ -587,39 +607,124 @@ def print_doc(doc):
         text = doc.page_content
             
     print(f"doc: {text}, metadata:{doc.metadata}")
+
+def get_ps_embedding():
+    global selected_ps_embedding
+    profile = priority_search_embedding[selected_ps_embedding]
+    bedrock_region =  profile['bedrock_region']
+    model_id = profile['model_id']
+    print(f'selected_ps_embedding: {selected_ps_embedding}, bedrock_region: {bedrock_region}, model_id: {model_id}')
+    
+    # bedrock   
+    boto3_bedrock = boto3.client(
+        service_name='bedrock-runtime',
+        region_name=bedrock_region, 
+        config=Config(
+            retries = {
+                'max_attempts': 30
+            }
+        )
+    )
+    
+    bedrock_ps_embedding = BedrockEmbeddings(
+        client=boto3_bedrock,
+        region_name = bedrock_region,
+        model_id = model_id
+    )  
+    
+    selected_ps_embedding = selected_ps_embedding + 1
+    if selected_ps_embedding == len(priority_search_embedding):
+        selected_ps_embedding = 0
+    
+    return bedrock_ps_embedding
+
+def priority_search(query, relevant_docs, minSimilarity):
+    excerpts = []
+    for i, doc in enumerate(relevant_docs):                
+        print('doc: ', doc)
+        
+        content = doc.page_content
+        print('content: ', content)
+        
+        excerpts.append(
+            Document(
+                page_content=content,
+                metadata={
+                    'name': doc.metadata['name'],
+                    'url': doc.metadata['url'],
+                    'from': doc.metadata['from'],                    
+                    'order':i,
+                }
+            )
+        )  
+    # print('excerpts: ', excerpts)
+
+    embeddings = get_ps_embedding()
+    vectorstore_confidence = FAISS.from_documents(
+        excerpts,  # documents
+        embeddings  # embeddings
+    )            
+    rel_documents = vectorstore_confidence.similarity_search_with_score(
+        query=query,
+        k=len(relevant_docs)
+    )
+
+    docs = []
+    for i, document in enumerate(rel_documents):
+        print(f'## Document(priority_search) {i+1}: {document}')
+
+        order = document[0].metadata['order']
+        name = document[0].metadata['name']
+        
+        assessed_score = document[1]
+        print(f"{order} {name}: {assessed_score}")
+
+        relevant_docs[order]['assessed_score'] = int(assessed_score)
+
+        if assessed_score < minSimilarity:
+            docs.append(relevant_docs[order])    
+    # print('selected docs: ', docs)
+
+    return docs
     
 def grade_documents(question, documents):
     print("###### grade_documents ######")
     
     filtered_docs = []
-    if multi_region == 'enable':  # parallel processing
-        print("start grading...")
-        filtered_docs = grade_documents_using_parallel_processing(question, documents)
-
-    else:
-        # Score each doc    
-        chat = get_chat()
-        retrieval_grader = get_retrieval_grader(chat)
-        for doc in documents:
-            # print('doc: ', doc)
-            print_doc(doc)
-            
-            score = retrieval_grader.invoke({"question": question, "document": doc.page_content})
-            print("score: ", score)
-            
-            grade = score.binary_score
-            print("grade: ", grade)
-            # Document relevant
-            if grade.lower() == "yes":
-                print("---GRADE: DOCUMENT RELEVANT---")
-                filtered_docs.append(doc)
-            # Document not relevant
-            else:
-                print("---GRADE: DOCUMENT NOT RELEVANT---")
-                # We do not include the document in filtered_docs
-                # We set a flag to indicate that we want to run web search
-                continue
+    print("start grading...")
     
+    if grade_state == "LLM":
+        if multi_region == 'enable':  # parallel processing
+            filtered_docs = grade_documents_using_parallel_processing(question, documents)
+        else:
+            # Score each doc    
+            chat = get_chat()
+            retrieval_grader = get_retrieval_grader(chat)
+            for doc in documents:
+                # print('doc: ', doc)
+                print_doc(doc)
+                
+                score = retrieval_grader.invoke({"question": question, "document": doc.page_content})
+                print("score: ", score)
+                
+                grade = score.binary_score
+                print("grade: ", grade)
+                # Document relevant
+                if grade.lower() == "yes":
+                    print("---GRADE: DOCUMENT RELEVANT---")
+                    filtered_docs.append(doc)
+                # Document not relevant
+                else:
+                    print("---GRADE: DOCUMENT NOT RELEVANT---")
+                    # We do not include the document in filtered_docs
+                    # We set a flag to indicate that we want to run web search
+                    continue
+    
+    elif grade_state == "PRIORITY_SEARCH":
+        filtered_docs = priority_search(question, documents, minDocSimilarity)
+    else:  # OTHERS
+        filtered_docs = documents
+
     global reference_docs 
     reference_docs += filtered_docs    
     # print('langth of reference_docs: ', len(reference_docs))
@@ -1959,6 +2064,13 @@ def getResponse(connectionId, jsonBody):
     else:
         rag_state = 'disable'
     print('rag_state: ', rag_state)
+    
+    global grade_state
+    if "grade" in jsonBody:
+        grade_state = jsonBody['grade']
+    else:
+        grade_state = 'LLM'
+    print('grade_state: ', grade_state)
         
     print('initiate....')
     global reference_docs

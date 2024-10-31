@@ -228,6 +228,16 @@ else {
 }
 console.log('rag_mode: ', rag_mode);
 
+// grade
+let gradeMode = localStorage.getItem('gradeMode'); // set userID if exists 
+if(gradeMode=="" || gradeMode==null) {
+    grade_mode = 'LLM';    
+}
+else {
+    grade_mode = gradeMode;
+}
+console.log('grade_mode: ', grade_mode);
+
 for (i=0;i<maxMsgItems;i++) {
     msglist.push(document.getElementById('msgLog'+i));
 
@@ -314,7 +324,8 @@ function onSend(e) {
                 "body": message.value,
                 "convType": conversationType,
                 "multi_region": multi_mode,
-                "rag": rag_mode
+                "rag": rag_mode,
+                "grade": grade_mode
             })
         }
         else {
