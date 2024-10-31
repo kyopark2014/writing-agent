@@ -46,7 +46,7 @@ LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 selected_chat = 0
 selected_multimodal = 0
 useEnhancedSearch = False
-minDocSimilarity = 300
+minDocSimilarity = 250
 grade_state = "LLM" # LLM, PRIORITY_SEARCH, OTHERS
 
 knowledge_base_name = os.environ.get('knowledge_base_name')
