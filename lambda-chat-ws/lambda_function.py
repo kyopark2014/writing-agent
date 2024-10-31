@@ -339,7 +339,7 @@ def get_multimodal():
 
 def update_state_message(msg:str, config):
     print(msg)
-    print('config: ', config)
+    # print('config: ', config)
     
     requestId = config.get("configurable", {}).get("requestId", "")
     connection = config.get("configurable", {}).get("connectionId", "")
@@ -632,32 +632,32 @@ def get_ps_embedding():
         region_name = bedrock_region,
         model_id = model_id
     )  
-    
+
     selected_ps_embedding = selected_ps_embedding + 1
     if selected_ps_embedding == len(priority_search_embedding):
         selected_ps_embedding = 0
-    
+
     return bedrock_ps_embedding
 
 def priority_search(query, relevant_docs, minSimilarity):
     excerpts = []
-    for i, doc in enumerate(relevant_docs):                
+    for i, doc in enumerate(relevant_docs):
         print('doc: ', doc)
-        
+
         content = doc.page_content
         print('content: ', content)
-        
+
         excerpts.append(
             Document(
                 page_content=content,
                 metadata={
                     'name': doc.metadata['name'],
                     'url': doc.metadata['url'],
-                    'from': doc.metadata['from'],                    
+                    'from': doc.metadata['from'],
                     'order':i,
                 }
             )
-        )  
+        )
     # print('excerpts: ', excerpts)
 
     embeddings = get_ps_embedding()
