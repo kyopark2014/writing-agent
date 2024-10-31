@@ -645,7 +645,7 @@ def priority_search(query, relevant_docs, minSimilarity):
         print('doc: ', doc)
 
         content = doc.page_content
-        print('content: ', content)
+        # print('content: ', content)
 
         excerpts.append(
             Document(
@@ -655,6 +655,7 @@ def priority_search(query, relevant_docs, minSimilarity):
                     'url': doc.metadata['url'],
                     'from': doc.metadata['from'],
                     'order':i,
+                    'score':0
                 }
             )
         )
@@ -677,12 +678,12 @@ def priority_search(query, relevant_docs, minSimilarity):
         order = document[0].metadata['order']
         name = document[0].metadata['name']
         
-        assessed_score = document[1]
-        print(f"{order} {name}: {assessed_score}")
+        score = document[1]
+        print(f"{order} {name}: {score}")
 
-        relevant_docs[order]['assessed_score'] = int(assessed_score)
+        relevant_docs[order]['score'] = int(score)
 
-        if assessed_score < minSimilarity:
+        if score < minSimilarity:
             docs.append(relevant_docs[order])    
     # print('selected docs: ', docs)
 
