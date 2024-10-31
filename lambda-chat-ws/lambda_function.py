@@ -658,7 +658,7 @@ def priority_search(query, relevant_docs, minSimilarity):
                 }
             )
         )
-    # print('excerpts: ', excerpts)
+    print('excerpts: ', excerpts)
 
     embeddings = get_ps_embedding()
     vectorstore_confidence = FAISS.from_documents(
