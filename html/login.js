@@ -44,7 +44,7 @@ console.log('ragInput: ', ragInput.value);
 const gradeInput = document.querySelector('#gradeMode');
 let grade_mode = localStorage.getItem('gradeMode');
 if(grade_mode != '') {
-    gradeInput.value = rag_mode;
+    gradeInput.value = grade_mode;
 }
 else {
     gradeInput.value = "LLM"  
