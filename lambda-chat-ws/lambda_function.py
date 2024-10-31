@@ -966,6 +966,114 @@ def retrieve_from_knowledge_base(query):
             )
         )
     return docs
+
+def retrieve(conn, q, idx, config):
+    relevant_docs = []
+    
+    # RAG - knowledge base
+    if rag_state=='enable':
+        update_state_message(f"reflecting... (RAG_retriever-{idx})", config)
+        docs = retrieve_from_knowledge_base(q)
+        print(f'q: {q}, RAG: {docs}')
+                        
+        if len(docs):
+            update_state_message(f"reflecting... (grader-{idx})", config)        
+            relevant_docs += grade_documents(q, docs)
+        
+    # web search
+    update_state_message(f"reflecting... (WEB_retriever-{idx})", config)    
+    docs = tavily_search(q, 4)
+    print(f'q: {q}, WEB: {docs}')
+            
+    if len(docs):
+        update_state_message(f"reflecting... (grader-{idx})", config)        
+        relevant_docs += grade_documents(q, docs)
+                
+    conn.send(relevant_docs)
+    conn.close()
+    
+def parallel_retriever(search_queries, idx, config):
+    relevant_documents = []    
+    
+    processes = []
+    parent_connections = []
+    for q in search_queries:
+        parent_conn, child_conn = Pipe()
+        parent_connections.append(parent_conn)
+            
+        process = Process(target=retrieve, args=(child_conn, q, idx, config))
+        processes.append(process)
+
+    for process in processes:
+        process.start()
+            
+    for parent_conn in parent_connections:
+        rel_docs = parent_conn.recv()
+
+        if(len(rel_docs)>=1):
+            for doc in rel_docs:
+                relevant_documents.append(doc)    
+
+    for process in processes:
+        process.join()
+    
+    #print('relevant_docs: ', relevant_docs)
+    return relevant_documents
+    
+def retrieve_docs(search_queries, idx, config):
+    relevant_docs = []
+    
+    if multi_region == 'enable':
+        relevant_docs = parallel_retriever(search_queries, idx, config)        
+    else:
+        for q in search_queries:        
+            # RAG - knowledge base
+            if rag_state=='enable':
+                update_state_message(f"reflecting... (RAG_retriever-{idx})", config)
+                docs = retrieve_from_knowledge_base(q)
+                print(f'q: {q}, RAG: {docs}')
+                        
+                if len(docs):
+                    update_state_message(f"reflecting... (grader-{idx})", config)        
+                    relevant_docs += grade_documents(q, docs)
+        
+            # web search
+            update_state_message(f"reflecting... (WEB_retriever-{idx})", config)    
+            docs = tavily_search(q, 4)
+            print(f'q: {q}, WEB: {docs}')
+            
+            if len(docs):
+                update_state_message(f"reflecting... (grader-{idx})", config)        
+                relevant_docs += grade_documents(q, docs)
+                
+    for i, doc in enumerate(relevant_docs):
+        print(f"#### {i}: {doc.page_content[:100]}")
+    
+    """
+    search = TavilySearchResults(max_results=4)
+    for q in search_queries:
+        response = search.invoke(q)
+        print(f'q: {q}, WEB: {response}')
+                
+        docs = []
+        for r in response:
+            if 'content' in r:                        
+                docs.append(
+                    Document(
+                        page_content=r.get("content"),
+                        metadata={
+                            'name': 'WWW',
+                            'url': r.get("url"),
+                            'from': 'tavily'
+                        },
+                    )
+                )                
+        print('docs from web search: ', docs)
+        
+        if len(docs):
+            filtered_docs += grade_documents(q, docs)    
+    """
+    return relevant_docs
         
 def revise_draft(state: ReflectionState, config):   
     print("###### revise_draft ######")
@@ -977,6 +1085,18 @@ def revise_draft(state: ReflectionState, config):
     print('search_queries: ', search_queries)
     print('reflection: ', reflection)
     
+    idx = config.get("configurable", {}).get("idx")
+    
+    filtered_docs = retrieve_docs(search_queries, idx, config)        
+    print('filtered_docs: ', filtered_docs)
+              
+    content = []   
+    if len(filtered_docs):
+        for d in filtered_docs:
+            content.append(d.page_content)        
+    print('content: ', content)
+    
+    # revise
     if isKorean(draft):
         revise_template = (
             "당신은 장문 작성에 능숙한 유능한 글쓰기 도우미입니다."                
@@ -1018,65 +1138,7 @@ def revise_draft(state: ReflectionState, config):
     revise_prompt = ChatPromptTemplate([
         ('human', revise_template)
     ])                              
-            
-    idx = config.get("configurable", {}).get("idx")
-    
-    filtered_docs = []    
-    # RAG - knowledge base
-    if rag_state=='enable':
-        for q in search_queries:
-            update_state_message(f"reflecting... (RAG_retriever-{idx})", config)    
-            docs = retrieve_from_knowledge_base(q)
-            print(f'q: {q}, RAG: {docs}')
-                    
-            if len(docs):
-                update_state_message(f"reflecting... (grade-{idx})", config)        
-                filtered_docs += grade_documents(q, docs)
-    
-    # web search
-    for q in search_queries:
-        update_state_message(f"reflecting... (WEB_retriever-{idx})", config)    
-        docs = tavily_search(q, 4)
-        print(f'q: {q}, WEB: {docs}')
-        
-        if len(docs):
-            update_state_message(f"reflecting... (grade-{idx})", config)        
-            filtered_docs += grade_documents(q, docs)
-    
-    """
-    search = TavilySearchResults(max_results=4)
-    for q in search_queries:
-        response = search.invoke(q)
-        print(f'q: {q}, WEB: {response}')
                 
-        docs = []
-        for r in response:
-            if 'content' in r:                        
-                docs.append(
-                    Document(
-                        page_content=r.get("content"),
-                        metadata={
-                            'name': 'WWW',
-                            'url': r.get("url"),
-                            'from': 'tavily'
-                        },
-                    )
-                )                
-        print('docs from web search: ', docs)
-        
-        if len(docs):
-            filtered_docs += grade_documents(q, docs)    
-    """
-        
-    print('filtered_docs: ', filtered_docs)
-              
-    content = []   
-    if len(filtered_docs):
-        for d in filtered_docs:
-            content.append(d.page_content)
-        
-    print('content: ', content)
-    
     update_state_message(f"reflecting... (generate-{idx})", config)
 
     chat = get_chat()
