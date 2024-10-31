@@ -48,7 +48,7 @@ selected_multimodal = 0
 useEnhancedSearch = False
 minDocSimilarity = 250
 grade_state = "LLM" # LLM, PRIORITY_SEARCH, OTHERS
-
+numberOfDocs = 3
 knowledge_base_name = os.environ.get('knowledge_base_name')
     
 multi_region_models = [   # claude sonnet 3.0
@@ -969,7 +969,7 @@ def retrieve_from_knowledge_base(query, top_k):
     return docs
 
 def retrieve(conn, q, idx, config):
-    top_k = 4
+    top_k = numberOfDocs
     
     relevant_docs = []
     # RAG - knowledge base
@@ -1030,7 +1030,7 @@ def parallel_retriever(search_queries, idx, config):
     
 def retrieve_docs(search_queries, idx, config):
     relevant_docs = []
-    top_k = 3
+    top_k = numberOfDocs
     
     if multi_region == 'enable':
         relevant_docs = parallel_retriever(search_queries, idx, config)        
