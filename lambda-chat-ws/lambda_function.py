@@ -673,13 +673,13 @@ def priority_search(query, relevant_docs, minSimilarity):
 
     docs = []
     for i, document in enumerate(rel_documents):
-        print(f'## Document(priority_search) {i+1}: {document}')
+        print(f'## Document(priority_search) query: {query}, {i+1}: {document}')
 
         order = document[0].metadata['order']
         name = document[0].metadata['name']
         
         score = document[1]
-        print(f"{order} {name}: {score}")
+        print(f"query: {query}, {order}: {name}, {score}")
 
         relevant_docs[order].metadata['score'] = int(score)
 
@@ -732,7 +732,7 @@ def grade_documents(question, documents):
     reference_docs += filtered_docs    
     # print('langth of reference_docs: ', len(reference_docs))
     
-    # print('len(docments): ', len(filtered_docs))    
+    print('len(filtered_docs): ', len(filtered_docs))    
     return filtered_docs
 
 class GradeDocuments(BaseModel):
