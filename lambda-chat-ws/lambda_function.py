@@ -693,6 +693,7 @@ def grade_documents(question, documents):
     
     filtered_docs = []
     print("start grading...")
+    print("grade_state: ", grade_state)
     
     if grade_state == "LLM":
         if multi_region == 'enable':  # parallel processing
