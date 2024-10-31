@@ -681,7 +681,7 @@ def priority_search(query, relevant_docs, minSimilarity):
         score = document[1]
         print(f"{order} {name}: {score}")
 
-        relevant_docs[order]['score'] = int(score)
+        relevant_docs[order].metadata['score'] = int(score)
 
         if score < minSimilarity:
             docs.append(relevant_docs[order])    
