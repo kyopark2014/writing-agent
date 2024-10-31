@@ -901,7 +901,7 @@ def reflect_node(state: ReflectionState, config):
     }
 
 knowledge_base_id = None
-def retrieve_from_knowledge_base(query):
+def retrieve_from_knowledge_base(query, top_k):
     global knowledge_base_id
     if not knowledge_base_id:        
         client = boto3.client('bedrock-agent')         
@@ -922,7 +922,7 @@ def retrieve_from_knowledge_base(query):
     if knowledge_base_id:    
         retriever = AmazonKnowledgeBasesRetriever(
             knowledge_base_id=knowledge_base_id, 
-            retrieval_config={"vectorSearchConfiguration": {"numberOfResults": 2}},
+            retrieval_config={"vectorSearchConfiguration": {"numberOfResults": top_k}},
         )
         
         relevant_docs = retriever.invoke(query)
@@ -969,11 +969,12 @@ def retrieve_from_knowledge_base(query):
 
 def retrieve(conn, q, idx, config):
     relevant_docs = []
+    top_k = 4
     
     # RAG - knowledge base
     if rag_state=='enable':
         update_state_message(f"reflecting... (RAG_retriever-{idx})", config)
-        docs = retrieve_from_knowledge_base(q)
+        docs = retrieve_from_knowledge_base(q, top_k)
         print(f'q: {q}, RAG: {docs}')
                         
         if len(docs):
@@ -982,7 +983,7 @@ def retrieve(conn, q, idx, config):
         
     # web search
     update_state_message(f"reflecting... (WEB_retriever-{idx})", config)    
-    docs = tavily_search(q, 4)
+    docs = tavily_search(q, top_k)
     print(f'q: {q}, WEB: {docs}')
             
     if len(docs):
@@ -1022,6 +1023,7 @@ def parallel_retriever(search_queries, idx, config):
     
 def retrieve_docs(search_queries, idx, config):
     relevant_docs = []
+    top_k = 3
     
     if multi_region == 'enable':
         relevant_docs = parallel_retriever(search_queries, idx, config)        
@@ -1030,7 +1032,7 @@ def retrieve_docs(search_queries, idx, config):
             # RAG - knowledge base
             if rag_state=='enable':
                 update_state_message(f"reflecting... (RAG_retriever-{idx})", config)
-                docs = retrieve_from_knowledge_base(q)
+                docs = retrieve_from_knowledge_base(q, top_k)
                 print(f'q: {q}, RAG: {docs}')
                         
                 if len(docs):
@@ -1039,7 +1041,7 @@ def retrieve_docs(search_queries, idx, config):
         
             # web search
             update_state_message(f"reflecting... (WEB_retriever-{idx})", config)    
-            docs = tavily_search(q, 4)
+            docs = tavily_search(q, top_k)
             print(f'q: {q}, WEB: {docs}')
             
             if len(docs):
@@ -1139,7 +1141,7 @@ def revise_draft(state: ReflectionState, config):
         ('human', revise_template)
     ])                              
                 
-    update_state_message(f"reflecting... (generate-{idx})", config)
+    update_state_message(f"reflecting... (generater-{idx})", config)
 
     chat = get_chat()
     reflect = revise_prompt | chat
