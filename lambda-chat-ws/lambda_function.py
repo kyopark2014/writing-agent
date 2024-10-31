@@ -731,8 +731,7 @@ def grade_documents(question, documents):
     global reference_docs 
     reference_docs += filtered_docs    
     # print('langth of reference_docs: ', len(reference_docs))
-    
-    print('len(filtered_docs): ', len(filtered_docs))    
+         
     return filtered_docs
 
 class GradeDocuments(BaseModel):
@@ -970,9 +969,9 @@ def retrieve_from_knowledge_base(query, top_k):
     return docs
 
 def retrieve(conn, q, idx, config):
-    relevant_docs = []
     top_k = 4
     
+    relevant_docs = []
     # RAG - knowledge base
     if rag_state=='enable':
         update_state_message(f"reflecting... (RAG_retriever-{idx})", config)
@@ -981,7 +980,10 @@ def retrieve(conn, q, idx, config):
                         
         if len(docs):
             update_state_message(f"reflecting... (grader-{idx})", config)        
-            relevant_docs += grade_documents(q, docs)
+            fitered_docs = grade_documents(q, docs)
+            
+            print(f'retrieve {idx}: len(RAG_relevant_docs)=', len(relevant_docs))
+            relevant_docs += fitered_docs
         
     # web search
     update_state_message(f"reflecting... (WEB_retriever-{idx})", config)    
@@ -990,7 +992,10 @@ def retrieve(conn, q, idx, config):
             
     if len(docs):
         update_state_message(f"reflecting... (grader-{idx})", config)        
-        relevant_docs += grade_documents(q, docs)
+        fitered_docs = grade_documents(q, docs)
+        
+        print(f'retrieve {idx}: len(WEB_relevant_docs)=', len(relevant_docs))
+        relevant_docs += fitered_docs
                 
     conn.send(relevant_docs)
     conn.close()
