@@ -132,7 +132,9 @@ try:
     #print('get_tavily_api_secret: ', get_tavily_api_secret)
     secret = json.loads(get_tavily_api_secret['SecretString'])
     # print('secret: ', secret)
-    tavily_api_key = json.loads(secret['tavily_api_key'])
+    
+    if 'tavily_api_key' in secret:
+        tavily_api_key = json.loads(secret['tavily_api_key'])
     # print('tavily_api_key: ', tavily_api_key)
 except Exception as e: 
     raise e
