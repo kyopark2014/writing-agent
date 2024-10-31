@@ -46,7 +46,6 @@ LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 selected_chat = 0
 selected_multimodal = 0
 useEnhancedSearch = False
-priority_search_embedding = json.loads(os.environ.get('priority_search_embedding'))
 minDocSimilarity = 200
 grade_state = "LLM" # LLM, PRIORITY_SEARCH, OTHERS
 
@@ -976,9 +975,6 @@ def revise_draft(state: ReflectionState, config):
     print('search_queries: ', search_queries)
     print('reflection: ', reflection)
     
-    idx = config.get("configurable", {}).get("idx")
-    update_state_message(f"reflecting... (retrieve-{idx})", config)
-        
     if isKorean(draft):
         revise_template = (
             "당신은 장문 작성에 능숙한 유능한 글쓰기 도우미입니다."                
@@ -1019,25 +1015,30 @@ def revise_draft(state: ReflectionState, config):
                     
     revise_prompt = ChatPromptTemplate([
         ('human', revise_template)
-    ])
-                              
+    ])                              
+            
+    idx = config.get("configurable", {}).get("idx")
+    
     filtered_docs = []    
-        
     # RAG - knowledge base
     if rag_state=='enable':
         for q in search_queries:
+            update_state_message(f"reflecting... (RAG_retriever-{idx})", config)    
             docs = retrieve_from_knowledge_base(q)
             print(f'q: {q}, RAG: {docs}')
-        
+                    
             if len(docs):
+                update_state_message(f"reflecting... (grade-{idx})", config)        
                 filtered_docs += grade_documents(q, docs)
     
     # web search
     for q in search_queries:
+        update_state_message(f"reflecting... (WEB_retriever-{idx})", config)    
         docs = tavily_search(q, 4)
         print(f'q: {q}, WEB: {docs}')
         
         if len(docs):
+            update_state_message(f"reflecting... (grade-{idx})", config)        
             filtered_docs += grade_documents(q, docs)
     
     """
