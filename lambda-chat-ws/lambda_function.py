@@ -46,7 +46,7 @@ LLM_for_multimodal= json.loads(os.environ.get('LLM_for_multimodal'))
 selected_chat = 0
 selected_multimodal = 0
 useEnhancedSearch = False
-minDocSimilarity = 200
+minDocSimilarity = 300
 grade_state = "LLM" # LLM, PRIORITY_SEARCH, OTHERS
 
 knowledge_base_name = os.environ.get('knowledge_base_name')
@@ -642,7 +642,7 @@ def get_ps_embedding():
 def priority_search(query, relevant_docs, minSimilarity):
     excerpts = []
     for i, doc in enumerate(relevant_docs):
-        print('doc: ', doc)
+        #print('doc: ', doc)
 
         content = doc.page_content
         # print('content: ', content)
@@ -659,7 +659,7 @@ def priority_search(query, relevant_docs, minSimilarity):
                 }
             )
         )
-    print('excerpts: ', excerpts)
+    #print('excerpts: ', excerpts)
 
     embeddings = get_ps_embedding()
     vectorstore_confidence = FAISS.from_documents(
