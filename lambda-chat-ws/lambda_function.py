@@ -50,7 +50,7 @@ minDocSimilarity = 250
 grade_state = "LLM" # LLM, PRIORITY_SEARCH, OTHERS
 numberOfDocs = 3
 knowledge_base_name = os.environ.get('knowledge_base_name')
-    
+
 multi_region_models = [   # claude sonnet 3.0
     {   
         "bedrock_region": "us-west-2", # Oregon
@@ -490,6 +490,100 @@ def isKorean(text):
     else:
         print('Not Korean: ', word_kor)
         return False
+
+def get_references(docs):
+    reference = "\n\nFrom\n"
+    
+    cnt = 1
+    nameList = []
+    for i, doc in enumerate(docs):
+        page = ""
+        if "page" in doc.metadata:
+            page = doc.metadata['page']
+            #print('page: ', page)            
+        url = ""
+        if "url" in doc.metadata:
+            url = doc.metadata['url']
+            #print('url: ', url)                
+        name = ""
+        if "name" in doc.metadata:
+            name = doc.metadata['name']
+            #print('name: ', name)     
+        pos = name.rfind('/')
+        name = name[pos+1:]
+        print(f"name: {name}")
+           
+        sourceType = ""
+        if "from" in doc.metadata:
+            sourceType = doc.metadata['from']
+        #print('sourceType: ', sourceType)        
+        
+        #if len(doc.page_content)>=1000:
+        #    excerpt = ""+doc.page_content[:1000]
+        #else:
+        #    excerpt = ""+doc.page_content
+        excerpt = ""+doc.page_content
+        # print('excerpt: ', excerpt)
+        
+        # for some of unusual case 
+        #excerpt = excerpt.replace('"', '')        
+        #excerpt = ''.join(c for c in excerpt if c not in '"')
+        excerpt = re.sub('"', '', excerpt)
+        # print('excerpt(quotation removed): ', excerpt)
+        print('length: ', len(excerpt))
+        
+        if len(excerpt)<5000:
+            if page:
+                reference = reference + f"{cnt}. {page} page, <a href={url} target=_blank>{name}</a>, {sourceType}, <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
+            else:
+                reference = reference + f"{cnt}. <a href={url} target=_blank>{name}</a>, {sourceType}, <a href=\"#\" onClick=\"alert(`{excerpt}`)\">관련문서</a>\n"
+            cnt = cnt + 1
+        else:            
+            if name in nameList:
+                print('duplicated!')
+            else:
+                #reference = reference + f"{cnt}. <a href={url} target=_blank>{name}</a>, {sourceType}\n"
+                reference = reference + f"{cnt}. <a href={url} target=_blank>{name}</a>\n"
+                nameList.append(name)                
+                cnt = cnt+1
+            
+    return reference
+
+def get_references_for_html(docs):
+    reference = ""
+    nameList = []
+    cnt = 1
+    for i, doc in enumerate(docs):
+        print(f"reference {i}: doc")
+        page = ""
+        if "page" in doc.metadata:
+            page = doc.metadata['page']
+            #print('page: ', page)            
+        url = ""
+        if "url" in doc.metadata:
+            url = doc.metadata['url']
+            #print('url: ', url)                
+        name = ""
+        if "name" in doc.metadata:
+            name = doc.metadata['name']
+            #print('name: ', name)     
+        pos = name.rfind('/')
+        name = name[pos+1:]
+        print(f"name: {name}")
+           
+        excerpt = ""+doc.page_content
+
+        excerpt = re.sub('"', '', excerpt)
+        print('length: ', len(excerpt))
+        
+        if name in nameList:
+            print('duplicated!')
+        else:
+            reference = reference + f"{cnt}. <a href={url} target=_blank>{name}</a><br>"
+            nameList.append(name)
+            cnt = cnt+1
+            
+    return reference
 
 def general_conversation(connectionId, requestId, chat, query):
     if isKorean(query)==True :
@@ -2230,6 +2324,9 @@ def getResponse(connectionId, jsonBody):
                                     
                 memory_chain.chat_memory.add_user_message(text)
                 memory_chain.chat_memory.add_ai_message(msg)
+                
+                if reference_docs:
+                        reference = get_references(reference_docs)
                 
         elif type == 'document':
             isTyping(connectionId, requestId, "")
