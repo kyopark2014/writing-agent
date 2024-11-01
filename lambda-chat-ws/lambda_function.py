@@ -1702,11 +1702,11 @@ def buildLongFormWriting():
         
     return workflow.compile()
 
-def run_long_form_writing_agent(connectionId, requestId, query):    
+def run_long_form_writing_agent(connectionId, requestId, query):
     app = buildLongFormWriting()
     
     # Run the workflow
-    isTyping(connectionId, requestId, "")        
+    isTyping(connectionId, requestId, "")
     inputs = {
         "instruction": query
     }    
@@ -2325,8 +2325,9 @@ def getResponse(connectionId, jsonBody):
                 memory_chain.chat_memory.add_user_message(text)
                 memory_chain.chat_memory.add_ai_message(msg)
                 
+                print('len(reference_docs): ', len(reference_docs))
                 if reference_docs:
-                        reference = get_references(reference_docs)
+                    reference = get_references(reference_docs)
                 
         elif type == 'document':
             isTyping(connectionId, requestId, "")
