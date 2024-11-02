@@ -1187,6 +1187,7 @@ def revise_draft(state: ReflectionState, config):
     print('reflection: ', reflection)
     
     idx = config.get("configurable", {}).get("idx")
+    update_state_message(f"revising... (retrieve-{idx})", config)
     
     filtered_docs = retrieve_docs(search_queries, idx, config)        
     print('filtered_docs: ', filtered_docs)
@@ -1642,14 +1643,13 @@ def revise_answers(state: State, config):
         reflection_app = buildReflection()
                 
         final_doc = ""   
+        references = []
         for idx, draft in enumerate(drafts):
             inputs = {
                 "draft": draft
             }                
-            output = reflection_app.invoke(inputs, config)
-                
-            final_doc += output['revised_draft'] + '\n\n'
-            
+            output = reflection_app.invoke(inputs, config)                
+            final_doc += output['revised_draft'] + '\n\n'            
             references += output['reference']
 
     subject = get_subject(state['instruction'])
