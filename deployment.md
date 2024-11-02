@@ -50,7 +50,7 @@ sudo service docker start
 sudo npm install -g aws-cdk --prefix /usr/local
 ```
 
-
+<!--
 
 ### CDK를 이용한 인프라 설치하기
 
@@ -76,7 +76,7 @@ curl https://raw.githubusercontent.com/kyopark2014/technical-summary/main/resize
 ```text
 chmod a+rx resize.sh && ./resize.sh 80
 ```
-
+-->
 
 ### 소스 다운로드 및 설치 
 
