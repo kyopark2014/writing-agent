@@ -911,6 +911,7 @@ class ReflectionState(TypedDict):
     search_queries : List[str]
     revised_draft: str
     revision_number: int
+    reference: List[str]
         
 class Reflection(BaseModel):
     missing: str = Field(description="Critique of what is missing.")
@@ -1173,10 +1174,6 @@ def retrieve_docs(search_queries, idx, config):
             filtered_docs += grade_documents(q, docs)    
     """
     
-    global reference_docs
-    reference_docs += relevant_docs
-    print('len(reference_docs): ', reference_docs)
-    
     return relevant_docs
         
 def revise_draft(state: ReflectionState, config):   
@@ -1193,7 +1190,11 @@ def revise_draft(state: ReflectionState, config):
     
     filtered_docs = retrieve_docs(search_queries, idx, config)        
     print('filtered_docs: ', filtered_docs)
-              
+    
+    reference = state['reference']
+    reference += filtered_docs
+    print('len(reference): ', reference)
+    
     content = []   
     if len(filtered_docs):
         for d in filtered_docs:
@@ -1272,7 +1273,8 @@ def revise_draft(state: ReflectionState, config):
         
     return {
         "revised_draft": revised_draft,
-        "revision_number": revision_number
+        "revision_number": revision_number,
+        "reference": reference
     }
         
 MAX_REVISIONS = 1
@@ -1514,7 +1516,8 @@ def reflect_draft(conn, reflection_app, config, idx, draft):
         
     result = {
         "revised_draft": output['revised_draft'],
-        "idx": idx
+        "idx": idx,
+        "reference": output['reference']
     }
             
     conn.send(result)    
@@ -1525,6 +1528,7 @@ def reflect_drafts_using_parallel_processing(drafts, config):
         
     processes = []
     parent_connections = []
+    references = []
         
     reflection_app = buildReflection()
     
@@ -1556,6 +1560,7 @@ def reflect_drafts_using_parallel_processing(drafts, config):
         if result is not None:
             print('result: ', result)
             revised_drafts[result['idx']] = result['revised_draft']
+            references += result['reference']
 
     for process in processes:
         process.join()
@@ -1564,7 +1569,7 @@ def reflect_drafts_using_parallel_processing(drafts, config):
     for revised_draft in revised_drafts:
         final_doc += revised_draft + '\n\n'
         
-    return final_doc
+    return final_doc, references
 
 def get_subject(query):
     system = (
@@ -1621,11 +1626,14 @@ def revise_answers(state: State, config):
     drafts = state["drafts"]        
     print('drafts: ', drafts)
     
+    global reference_docs
+    
     update_state_message("revising...", config)
         
     # reflection
     if multi_region == 'enable':  # parallel processing
-        final_doc = reflect_drafts_using_parallel_processing(drafts, config)
+        final_doc, reference_docs = reflect_drafts_using_parallel_processing(drafts, config)
+        
     else:
         reflection_app = buildReflection()
                 
@@ -1637,6 +1645,8 @@ def revise_answers(state: State, config):
             output = reflection_app.invoke(inputs, config)
                 
             final_doc += output['revised_draft'] + '\n\n'
+            
+            reference_docs += output['reference']
 
     subject = get_subject(state['instruction'])
     subject = subject.replace(" ","_")
@@ -1644,6 +1654,8 @@ def revise_answers(state: State, config):
     subject = subject.replace("!","")
     subject = subject.replace(".","")
     subject = subject.replace(":","")
+    
+    print('len(reference_docs): ', len(reference_docs))
         
     # markdown file
     markdown_key = 'markdown/'+f"{subject}.md"
