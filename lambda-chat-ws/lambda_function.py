@@ -1191,8 +1191,11 @@ def revise_draft(state: ReflectionState, config):
     filtered_docs = retrieve_docs(search_queries, idx, config)        
     print('filtered_docs: ', filtered_docs)
     
-    reference = state['reference']
-    reference += filtered_docs
+    if 'reference' in state:
+        reference = state['reference']
+        reference += filtered_docs
+    else:
+        reference = filtered_docs
     print('len(reference): ', reference)
     
     content = []   
@@ -1598,7 +1601,9 @@ def get_subject(query):
         raise Exception ("Not able to request to LLM")        
     return subject
     
-def markdown_to_html(body):
+def markdown_to_html(body, reference):
+    body = body + f"\n\n### 참고자료\n\n\n"
+    
     html = f"""
 <!DOCTYPE html>
 <html lang="en">
@@ -1617,6 +1622,7 @@ def markdown_to_html(body):
         <md-block>{body}
         </md-block>
     </div>
+    {reference}
 </body>
 </html>"""        
     return html
@@ -1626,13 +1632,11 @@ def revise_answers(state: State, config):
     drafts = state["drafts"]        
     print('drafts: ', drafts)
     
-    global reference_docs
-    
     update_state_message("revising...", config)
         
     # reflection
     if multi_region == 'enable':  # parallel processing
-        final_doc, reference_docs = reflect_drafts_using_parallel_processing(drafts, config)
+        final_doc, references = reflect_drafts_using_parallel_processing(drafts, config)
         
     else:
         reflection_app = buildReflection()
@@ -1646,7 +1650,7 @@ def revise_answers(state: State, config):
                 
             final_doc += output['revised_draft'] + '\n\n'
             
-            reference_docs += output['reference']
+            references += output['reference']
 
     subject = get_subject(state['instruction'])
     subject = subject.replace(" ","_")
@@ -1655,7 +1659,7 @@ def revise_answers(state: State, config):
     subject = subject.replace(".","")
     subject = subject.replace(":","")
     
-    print('len(reference_docs): ', len(reference_docs))
+    print('len(references): ', len(references))
         
     # markdown file
     markdown_key = 'markdown/'+f"{subject}.md"
@@ -1677,8 +1681,16 @@ def revise_answers(state: State, config):
         
     # html file
     html_key = 'markdown/'+f"{subject}.html"
+    
+    html_reference = ""
+    print('references: ', references)
+    if references:
+        html_reference = get_references_for_html(references)
         
-    html_body = markdown_to_html(markdown_body)
+        global reference_docs
+        reference_docs += references
+        
+    html_body = markdown_to_html(markdown_body, html_reference)
     print('html_body: ', html_body)
         
     s3_client = boto3.client('s3')  
@@ -1847,7 +1859,7 @@ def save_answer(state: State, config):
         
     html_url = f"{path}{html_key}"
     print('html_url: ', html_url)
-        
+    
     return {
         "final_doc": final_doc+f"\n<a href={html_url} target=_blank>[미리보기 링크]</a>\n<a href={markdown_url} download=\"{subject}.md\">[다운로드 링크]</a>"
     }    
