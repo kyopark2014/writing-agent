@@ -822,10 +822,6 @@ def grade_documents(question, documents):
     else:  # OTHERS
         filtered_docs = documents
 
-    global reference_docs 
-    reference_docs += filtered_docs    
-    # print('langth of reference_docs: ', len(reference_docs))
-         
     return filtered_docs
 
 class GradeDocuments(BaseModel):
@@ -1176,6 +1172,11 @@ def retrieve_docs(search_queries, idx, config):
         if len(docs):
             filtered_docs += grade_documents(q, docs)    
     """
+    
+    global reference_docs
+    reference_docs += relevant_docs
+    print('len(reference_docs): ', reference_docs)
+    
     return relevant_docs
         
 def revise_draft(state: ReflectionState, config):   
