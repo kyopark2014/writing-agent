@@ -913,3 +913,5 @@ def should_continue(state: ReflectionState, config):
 - [Agentic Workflow는 무엇인가요? 어떻게 쓰는게 좋은가요?](https://github.com/kyopark2014/writing-agent/blob/main/contents/%EC%97%90%EC%9D%B4%EC%A0%84%ED%8A%B8_%EA%B8%B0%EB%B0%98_%EC%9E%91%EC%97%85_%ED%9D%90%EB%A6%84_%EA%B4%80%EB%A6%AC.md)
 
 - [RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval의 정의와 동작 방식](https://github.com/kyopark2014/writing-agent/blob/main/contents/RAPTOR_%ED%8A%B8%EB%A6%AC_%EA%B8%B0%EB%B0%98_%EC%A0%95%EB%B3%B4_%EA%B2%80%EC%83%89_%EB%B0%8F_%EC%B6%94%EC%83%81%ED%99%94_%EB%B0%A9%EB%B2%95%EB%A1%A0.md)
+
+- [Report mAIstro: Multi-agent research and report writing](https://github.com/langchain-ai/report-mAIstro?tab=readme-ov-file): LangGraph로 효과적인 글쓰기 하는 방법을 잘 설명하고 있음
