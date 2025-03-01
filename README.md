@@ -2,7 +2,7 @@
 
 <p align="left">
     <a href="https://hits.seeyoufarm.com"><img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fkyopark2014%2Fwriting-agent&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com"/></a>
-    <img alt="License" src="https://img.shields.io/badge/LICENSE-MIT-green">
+    <img alt="License" src="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square">
 </p>
 
 다음의 내용은 아래와 같은 용도로 LLM Agent를 활용하고자 하는 사람들을 위해 만들었습니다.
